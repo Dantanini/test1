@@ -1,0 +1,46 @@
+<LinearLayout
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="#FFE7CD"
+    >
+    <TextView 
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="完成訂單"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:textColor="#FA0300"
+        />
+
+    <TextView 
+        android:id="@+id/txtAOF1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="15sp"
+        android:gravity="center"
+        android:layout_marginTop="20sp"
+        
+        />
+    
+    <ImageView 
+        android:id="@+id/imgAOF1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20sp"
+        />
+    <Button 
+		android:id="@+id/btnAOF1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="確定"
+        android:layout_marginTop="30sp"
+        android:background="@drawable/button_sp1"
+        />
+</LinearLayout>

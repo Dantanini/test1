@@ -1,0 +1,83 @@
+package tw.com.gear.prjmarcorder;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.Gallery;
+import android.widget.ImageView;
+
+public class ImageAdapter extends BaseAdapter {
+
+	private Context mContext ;
+	private int width;
+	private int height;
+	private List<Bitmap> myImageList = new ArrayList<Bitmap>();
+	private int index = 0;
+	
+	public ImageAdapter(Context context){
+		mContext = context;
+	}
+	@Override
+	public int getCount() {
+		return myImageList.size();
+	}
+
+	@Override
+	public Object getItem(int arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public long getItemId(int arg0) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public View getView(int position, View convertView, ViewGroup arg2) {
+		ImageView imageView;
+		if(convertView == null){
+			imageView = new ImageView(mContext);
+			imageView.setLayoutParams(new Gallery.LayoutParams(width, height));
+			imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+		}else{
+			imageView = (ImageView)convertView;
+		}
+		imageView.setImageBitmap(myImageList.get(position));
+		return imageView;
+	}
+
+	public List<Bitmap> GetImageList(){
+		return myImageList;
+	}
+	//設定imageAdapter的所有圖片
+	public void SetImageList(List<Bitmap> bitmapList){
+		myImageList = bitmapList;
+	}
+	public void SetWidth(int width){
+		this.width = width;
+	}
+	public int GetWidth(){
+		return this.width;
+	}
+	public void SetHeight(int height){
+		this.height = height;
+	}
+	public int GetHeight(){
+		return this.height;
+	}
+	//取得現在是第幾項
+	public int getIndex() {
+		return index;
+	}
+	public void setIndex(int index) {
+		this.index = index;
+	}
+
+}

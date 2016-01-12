@@ -1,0 +1,387 @@
+package tw.com.gear.prjmarcorder;
+
+
+import java.net.URL;
+import java.util.ArrayList;
+
+
+
+
+
+
+
+
+
+import cy.rorate3d.view.CYRorateView;
+import cy.rorate3d.view.CYRorateViewObserver;
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.app.AlertDialog.Builder;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.service.dreams.DreamService;
+import android.util.DisplayMetrics;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.WindowManager;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.os.Build;
+
+public class ActDreamCart extends Activity implements CYRorateViewObserver {
+	ArrayList<Bitmap> galleryIcon;
+	ArrayList<ListAdapter> adapterList = new ArrayList<ListAdapter>();
+	ImageAdapter dreamCartAdapter;
+	ProgressDialog myDialog2;	
+	String deleteStr = "";
+	View view1;
+	View view2;
+	View view3;
+	String[ ] dreamCartJsonStr;
+	int selectIndex = 0;
+	boolean threadIsEnd = false;	
+	private static final int GUI_OK = 0x101;//handler的驗證碼
+	public ArrayList<ArrayList<OrderItem>> dreamCarts;//夢幻餐車集合
+	public ArrayList<ListAdapter> listAdpaterArray ;
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		setContentView(R.layout.act_dream_cart);
+		dreamCarts = new ArrayList<ArrayList<OrderItem>>();
+		
+		////////////////////////////////////////////////////////////////////////////////////////////////
+		metrics = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(metrics);
+	      context = this;
+	      leftImage = (ImageView)findViewById(R.id.imgARTLeft);
+	      leftImage.setOnClickListener(left_click);
+	      rightImage = (ImageView)findViewById(R.id.imgARTRight);
+	      rightImage.setOnClickListener(right_click);
+	      txtMsgText = (TextView)findViewById(R.id.txtView1_1);
+	      myView = (CYRorateView) findViewById(R.id.myView);
+	      view1 = LayoutInflater.from(this).inflate(R.layout.view1, null);
+	      view2 = LayoutInflater.from(this).inflate(R.layout.view1, null);
+	      view3 = LayoutInflater.from(this).inflate(R.layout.view1, null);
+	      view1.setOnClickListener(rorateView_click);
+	      view2.setOnClickListener(rorateView_click);
+	      view3.setOnClickListener(rorateView_click);
+	      
+	      myView.addView(view1);
+	      myView.addView(view2);
+	      myView.addView(view3);
+	      myView.setIsNeedCirculate(false);
+	      
+	      iView1 = (ImageView)view1.findViewById(R.id.view1img);
+	      iView2 = (ImageView)view2.findViewById(R.id.view1img);
+	      iView3 = (ImageView)view3.findViewById(R.id.view1img);
+	      lView1 = (ListView)view1.findViewById(R.id.view1List);
+	      lView2 = (ListView)view2.findViewById(R.id.view1List);
+	      lView3 = (ListView)view3.findViewById(R.id.view1List);
+	      
+	      String dreamCartStr = getIntent().getStringExtra("dreamCartStr");
+	      dreamCartJsonStr = dreamCartStr.split("@");
+			//2.將餐車資料轉換成ArrayList<OrderItem>物件
+			dreamCarts.clear();
+			for(int i =0; i < dreamCartJsonStr.length; i++){
+					dreamCarts.add(JsonFactory.GetDreamCart(dreamCartJsonStr[i]));									
+			}
+	      
+			listAdpaterArray = new ArrayList<ListAdapter>();
+			listAdpaterArray.add(new ListAdapter(context, dreamCarts.get(0)));
+			listAdpaterArray.add(new ListAdapter(context, dreamCarts.get(1)));
+			listAdpaterArray.add(new ListAdapter(context, dreamCarts.get(2)));
+			
+			lView1.setAdapter(listAdpaterArray.get(0));
+			lView2.setAdapter(listAdpaterArray.get(1));
+			lView3.setAdapter(listAdpaterArray.get(2));
+
+	}
+	@Override
+	protected void onResume() {
+		
+		super.onResume();
+	}
+	
+	@Override
+	protected void onStart() {
+		new Thread(){
+			@SuppressLint("NewApi")
+			public void run(){
+				try{
+					threadIsEnd=false;
+					sleep(1000);
+					threadIsEnd=true;
+					
+					Message msg = new Message();
+					msg.what = GUI_OK;
+					ActDreamCart.this.myMessageHandler.sendMessage(msg);
+				}catch(Exception e){
+					
+				}finally{
+				}
+			}
+		}.start();
+		super.onStart();
+	}
+	Handler myMessageHandler = new Handler(){
+		@Override
+		public void handleMessage(Message msg) {
+			//super.handleMessage(msg);
+			switch(msg.what){
+			case GUI_OK:
+				if(threadIsEnd == true){
+					myView.rorateToNext();
+				}		
+			      break;
+			}
+		}
+	};
+
+	class ListAdapter extends BaseAdapter{
+		
+		ArrayList<OrderItem> List = new ArrayList<OrderItem>();
+		public ListAdapter(Context context, ArrayList<OrderItem> list){
+			this.List = list;			
+		}
+		class ViewHolder{
+			TextView txtview, txtitem;
+			ImageView itemImgView;
+		}
+		public void SetList(ArrayList<OrderItem> list){
+			this.List = list;
+		}
+		@Override
+		public int getCount() {
+			// TODO Auto-generated method stub
+			return List.size();
+		}
+
+		@Override
+		public String getItem(int arg0) {
+			// TODO Auto-generated method stub
+			return List.get(arg0).getName();
+		}
+
+		@Override
+		public long getItemId(int arg0) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup arg2) {
+			ViewHolder viewHolder;
+			if(convertView == null){
+				viewHolder = new ViewHolder();
+				convertView = LayoutInflater.from(context).inflate(R.layout.item, null);
+				viewHolder.txtview = (TextView)convertView.findViewById(R.id.txt);
+//				viewHolder.itemImgView = (ImageView)convertView.findViewById(R.id.itemImgView1);
+//				ViewGroup.LayoutParams lyparams = viewHolder.itemImgView.getLayoutParams();
+//				lyparams.height = metrics.heightPixels/10;
+//				lyparams.width = metrics.widthPixels/10;
+//				viewHolder.itemImgView.setLayoutParams(lyparams);
+				viewHolder.txtitem = (TextView)convertView.findViewById(R.id.itemtxt1);
+				convertView.setTag(viewHolder);
+			}else{
+				viewHolder = (ViewHolder) convertView.getTag();
+			}
+//			viewHolder.txtview.setText(this.List.get(position).getName());
+			viewHolder.txtitem.setText(this.List.get(position).getName()+" x"+this.List.get(position).getQuantity());
+//			txtitem.setText(List.get(position).getName()+" x"+List.get(position).getQuantity());
+			return convertView;
+		}
+		
+	}
+	//將現在夢幻餐車的id存起來
+	@Override
+	public void getRorateCurrentView(int arg0) {
+		selectIndex = arg0;
+
+	}
+
+	@Override
+	public void getRorateViewMeasured(int width, int height) {//在此設定ListView的寬高，和圖片的寬高
+		ViewGroup.LayoutParams layoutParams = lView1.getLayoutParams();
+		layoutParams.height = height - (metrics.heightPixels/4);
+		layoutParams.width = width;
+		lView1.setLayoutParams(layoutParams);
+		ViewGroup.LayoutParams layoutParams2 = lView2.getLayoutParams();
+		layoutParams2.height = height - (metrics.heightPixels/4);
+		layoutParams2.width = width;
+		lView2.setLayoutParams(layoutParams2);
+		ViewGroup.LayoutParams layoutParams3 = lView3.getLayoutParams();
+		layoutParams3.height = height - (metrics.heightPixels/4);
+		layoutParams3.width = width;
+		lView3.setLayoutParams(layoutParams3);
+		ViewGroup.LayoutParams layoutParamsI1 = iView1.getLayoutParams();
+		layoutParamsI1.height = metrics.heightPixels/5;
+		iView1.setLayoutParams(layoutParamsI1);
+		ViewGroup.LayoutParams layoutParamsI2 = iView2.getLayoutParams();
+		layoutParamsI2.height = metrics.heightPixels/5;
+		iView2.setLayoutParams(layoutParamsI2);
+		ViewGroup.LayoutParams layoutParamsI3 = iView3.getLayoutParams();
+		layoutParamsI3.height = metrics.heightPixels/5;
+		iView3.setLayoutParams(layoutParamsI3);
+		
+
+	}
+	Handler myMessageHandler2 = new Handler(){
+		@Override
+		public void handleMessage(Message msg) {
+			//super.handleMessage(msg);
+			switch(msg.what){
+			case GUI_OK:
+					dreamCarts.get(selectIndex).clear();
+					MyToast.Show(context, "刪除完成");
+					finish();
+					break;
+			}
+		}
+	};
+	
+	// 檢查現在網路有沒有連線的方法
+	public boolean checkInternet(android.content.Context context) {
+		boolean result = false;
+		ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo info = connManager.getActiveNetworkInfo();
+		if (info == null || !info.isConnected()) {
+			result = false;
+		} else {
+			if (!info.isAvailable()) {
+				result = false;
+			} else {
+				result = true;
+			}
+		}
+		return result;
+	}
+	
+	//夢幻餐車被選取編輯、購買、刪除其中一項時
+	android.content.DialogInterface.OnClickListener dreamCartDialog_click = new android.content.DialogInterface.OnClickListener(){
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			if(which == 0){//點選編輯
+				Intent intent1 = new Intent(ActDreamCart.this, ActDreamCartEdit.class);
+				intent1.putExtra("jsonStr", selectIndex+"");//送出被點選的夢幻餐車id
+				intent1.putExtra("str1", dreamCartJsonStr[0]);
+				intent1.putExtra("str2", dreamCartJsonStr[1]);
+				intent1.putExtra("str3", dreamCartJsonStr[2]);				
+				startActivity(intent1);
+				finish();
+			}else if(which == 1){//點選購買
+				Intent intent2 = new Intent(ActDreamCart.this, ActOrder.class);
+				intent2.putExtra("action","dreamCart");
+				intent2.putExtra("dreamCart", dreamCartJsonStr[selectIndex]);//送出該夢幻餐車項目字串
+				startActivity(intent2);			
+				finish();
+			}else if(which == 2){//點選刪除
+				switch (selectIndex) {
+				case 0:
+					deleteStr = "1@" + dreamCartJsonStr[1] + "@" + dreamCartJsonStr[2];
+					break;
+				case 1:
+					deleteStr = dreamCartJsonStr[0] + "@2@" + dreamCartJsonStr[2];
+					break;
+				case 2:
+					deleteStr = dreamCartJsonStr[0] + "@" + dreamCartJsonStr[1]+"@3";
+					break;
+				}
+				//把購物車內容轉成jsonCode存上雲端資料庫
+				myDialog2 = ProgressDialog.show(context, "連線中", "請稍後...", true, true, new DialogInterface.OnCancelListener() {
+					public void onCancel(DialogInterface dialog) {
+						myDialog2.dismiss();
+					}
+				});
+				new Thread(){
+					public void run(){
+						try{
+							//上傳所有夢幻餐車資料，做更新資料
+							URL url = new URL(ActMain.webpage);
+							SharedPreferences sharePre =getSharedPreferences("T1", 0);
+							String account = sharePre.getString("id", "");
+							String responseStr = new DataBaseManagement()
+							.upLoadDreamCart(url, account,deleteStr).toString().trim();
+							
+							Message msg = new Message();
+							msg.what = GUI_OK;
+							
+							ActDreamCart.this.myMessageHandler2.sendMessage(msg);
+						}catch(Exception e){
+							
+						}finally{
+							myDialog2.dismiss();
+						}
+					}
+				}.start();			
+			}
+		}	
+	};
+	//夢幻餐車被點選時，顯示dialog
+	OnClickListener rorateView_click = new OnClickListener() {
+		public void onClick(View v) {
+			if (!checkInternet(ActDreamCart.this) == true) {
+				MyToast.Show(ActDreamCart.this,
+						"偵測到網路連線狀況不穩！\n請檢查您的網路是否有連線或開啟了飛航模式。");
+				return;
+			}
+			String[ ] list = {"編輯", "購買", "清空"};
+			Builder build = new AlertDialog.Builder(context).setIcon(R.drawable.marcordericon2).setTitle("請選擇").setItems(list, dreamCartDialog_click);
+			Dialog d = build.create();
+			d.show();
+
+		}
+	};
+	//myView向左轉
+	OnClickListener left_click = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			myView.rorateToPre();
+		}
+	};
+	//myView向右轉
+	OnClickListener right_click = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			myView.rorateToNext();;
+		}
+	};
+	ListView lView1;
+	ListView lView2;
+	ListView lView3;
+	TextView txt1;
+	TextView txt2;
+	TextView txt3;
+	CYRorateView myView;
+	ImageView iView1;
+	ImageView iView2;
+	ImageView iView3;
+	Context context;
+	DisplayMetrics metrics;
+	TextView txtMsgText;
+	ImageView leftImage;
+	ImageView rightImage;
+}

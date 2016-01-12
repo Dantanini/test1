@@ -1,0 +1,162 @@
+package tw.com.gear.marcorder;
+
+import java.util.List;
+
+import android.graphics.Bitmap;
+
+public class OrderItem {
+// 點餐項目，會經過UI介面點餐後，將Food轉成點餐項目
+	//點餐項目類似Food類別，但是不需要icon圖示，且要增加數量
+
+	
+
+	
+	private String serial="";//該食物物件的編號
+	private String name="";//名稱
+	private String attrs="";//食物的附加條件
+	private int attrsPrice = 0;//附加條件的價格
+	private boolean attrsState = false;//是否勾選附加條件
+//	private int price = 0;//價格
+	private String type="";//食物的分類(單點或套餐)
+	private int quantity;
+	private String mainFoodSerial;
+	private String mainFoodName;
+	private int mainFoodPrice=0;
+	private String subFoodSerial;
+	private String subFoodName;
+	private int subFoodPrice=0;
+	
+	public void Clear(){
+		serial="";
+		name="";
+		attrs = "";
+		type = "";
+		quantity = 0;
+		mainFoodName="";
+		mainFoodSerial="";
+		subFoodName="";
+		subFoodSerial="";
+		mainFoodPrice =0;
+		subFoodPrice = 0;
+	}
+	
+	public String getMainFoodSerial() {
+		return mainFoodSerial;
+	}
+
+	public void setMainFoodSerial(String mainFoodSerial) {
+		this.mainFoodSerial = mainFoodSerial;
+	}
+
+	public String getMainFoodName() {
+		return mainFoodName;
+	}
+
+	public void setMainFoodName(String mainFoodName) {
+		this.mainFoodName = mainFoodName;
+	}
+
+	public String getSubFoodSerial() {
+		return subFoodSerial;
+	}
+
+	public void setSubFoodSerial(String subFoodSerial) {
+		this.subFoodSerial = subFoodSerial;
+	}
+
+	public String getSubFoodName() {
+		return subFoodName;
+	}
+
+	public void setSubFoodName(String subFoodName) {
+		this.subFoodName = subFoodName;
+	}
+
+	public OrderItem() {
+		// TODO Auto-generated constructor stub
+	}
+		
+	public OrderItem(String serial, String _name, int _quantity, int _price) {
+		this.serial = serial;	
+		this.name = _name;
+		this.setQuantity(_quantity);
+		this.mainFoodPrice = _price;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getAttrs() {
+		return attrs;
+	}
+	public void setAttrs(String attrs) {
+		this.attrs = attrs;
+	}
+	public int getPrice() {
+		return mainFoodPrice+subFoodPrice;
+	}
+	public void setPrice(int price) {
+		this.mainFoodPrice = price;
+	}
+	public String getSerial() {
+		return serial;
+	}
+	public void setSerial(String serial) {
+		this.serial = serial;
+	}
+	public String getType() {
+		return type;
+	}
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public int getQuantity() {
+		return quantity;
+	}
+
+	public void setQuantity(int quantity) {
+		this.quantity = quantity;
+	}
+
+	public OrderItem Clone(OrderItem o){
+		this.attrs= o.attrs;
+		this.mainFoodName = o.mainFoodName;
+		this.mainFoodSerial = o.mainFoodSerial;
+		this.name = o.name;
+		this.mainFoodPrice = o.mainFoodPrice;
+		this.subFoodPrice = o.subFoodPrice;
+		this.quantity = o.quantity;
+		this.serial = o.serial;
+		this.subFoodName = o.subFoodName;
+		this.subFoodSerial = o.subFoodSerial;
+		this.type = o.type;
+		return this;
+	}
+
+	public int getSubFoodPrice() {
+		return subFoodPrice;
+	}
+
+	public void setSubFoodPrice(int subFoodPrice) {
+		this.subFoodPrice = subFoodPrice;
+	}
+
+	public int getAttrsPrice() {
+		return attrsPrice;
+	}
+
+	public void setAttrsPrice(int attrsPrice) {
+		this.attrsPrice = attrsPrice;
+	}
+
+	public boolean getAttrsState() {
+		return attrsState;
+	}
+
+	public void setAttrsState(boolean attrsState) {
+		this.attrsState = attrsState;
+	}
+}

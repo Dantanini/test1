@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="myApp_name">MarcOrder</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_act_order">ActOrder</string>
+    <string name="title_activity_act_login">ActLogin</string>
+    <string name="title_activity_act_test">ActTest</string>
+    <string name="title_activity_act_ready_to_order">ActReadyToOrder</string>
+    <string name="title_activity_act_page_cart">ActPageCart</string>
+    <string name="title_activity_act_my_date_picker">ActMyDatePicker</string>
+    <string name="title_activity_act_order_item_to_edit">ActOrderItemToEdit</string>
+    <string name="title_activity_act_order_item_set_to_edit">ActOrderItemSetToEdit</string>
+    <string name="title_activity_act_order_finish">ActOrderFinish</string>
+    <string name="title_activity_cities_little">CitiesLittleActivity</string>
+    <string name="title_activity_act_fans">ActFans</string>
+    <string name="title_activity_act_dream_cart">ActDreamCart</string>
+    <string name="title_activity_act_dream_cart_edit">ActDreamCartEdit</string>
+    <string name="title_activity_act_dream_cart_finish">ActDreamCartFinish</string>
+    <string name="title_activity_act_forget_pwd">ActForgetPwd</string>
+
+</resources>

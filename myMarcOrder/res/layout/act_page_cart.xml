@@ -1,0 +1,89 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"    
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="1dp"
+    android:background="#FFE7CD"
+    >
+    
+    <LinearLayout  android:id="@+id/layout1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" 
+    android:layout_alignParentLeft="true"
+    >       
+    <Button 
+        android:id="@+id/btnAPCCencel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:text="返回"
+        android:textColor="#FFFFFF"
+        android:layout_marginRight="1sp"
+        android:minHeight="35dp"
+        android:background="@drawable/button_red"
+        />
+    <TextView 
+        android:id="@+id/lblAPCTitle"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:text="購物車"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:textColor="#FA0300"
+        android:minHeight="35dp"
+        />
+    <Button 
+        android:id="@+id/btnAPCOk"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:text="結帳" 
+        android:textColor="#FFFFFF"
+        android:layout_marginLeft="1sp"
+        android:minHeight="35dp"
+        android:background="@drawable/button_red"
+        />
+       </LinearLayout>
+<LinearLayout 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+		android:orientation="horizontal"
+        android:background="@drawable/corner_2"        
+    >
+    <TextView
+        android:id="@+id/txtAPCMsg1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:padding="10dp"
+        android:gravity="left"
+        android:background="#FFE7CD"
+        />
+    <Button 
+        android:id="@+id/btnAPCDreamCart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+		android:text="加入夢幻餐車"        
+		android:textSize="15sp"
+		android:textColor="#FFFFFF"
+		android:layout_gravity="center"
+		android:background="@drawable/button_blue"
+		android:visibility="gone"
+        />
+    
+</LinearLayout>
+    
+    <ListView
+        android:id="@+id/listAPCItem"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:minHeight="150dp"
+        android:background="@drawable/corner_2"
+        />
+
+</LinearLayout>
+

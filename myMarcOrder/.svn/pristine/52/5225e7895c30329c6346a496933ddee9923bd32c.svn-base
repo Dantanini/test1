@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" >
+    <corners android:topLeftRadius="10px" android:topRightRadius="10px"
+  android:bottomLeftRadius="10px" android:bottomRightRadius="10px" />
+<!-- 設置控件的背景顏色 -->
+<solid android:color="#FFE7CD" />
+<!-- 控件邊框顏色和粗細 -->
+<stroke android:width="2dp" android:color="#FFFFFF" />
+<!-- 控件內容據邊框間距 -->
+<padding android:left="3sp" android:top="3sp" android:right="3sp"
+  android:bottom="3sp" />
+
+</shape>

@@ -1,0 +1,676 @@
+package tw.com.gear.marcorder;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
+public class DataBaseManagement {
+
+	public DataBaseManagement() {
+
+	}
+
+	// 上傳夢幻餐車
+	public StringBuffer upLoadDreamCart(URL url, String account, String cartJson) {
+		StringBuffer b = null;
+		try {
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setDoInput(true);
+			con.setDoOutput(true);
+			con.setUseCaches(false);
+			con.setRequestMethod("POST");
+
+			con.setRequestProperty("Connection", "Keep-Alive");
+			con.setRequestProperty("Accept-Charset", "UTF-8");
+			con.setRequestProperty("Content-Type",
+					"multipart/form-data; boundary=" + boundary);
+
+			DataOutputStream ds = new DataOutputStream(con.getOutputStream());
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=action" + end);
+			ds.writeBytes(end);
+			ds.writeBytes("upLoadDC");
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=account" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(account, "UTF-8"));
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=dreamCart"
+					+ end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(cartJson, "UTF-8"));
+			ds.writeBytes(end);
+
+			ds.flush();
+			ds.writeBytes(twoHyphens + boundary + twoHyphens + end);
+			ds.close();
+			// 接收雲端回傳的response
+			InputStream is = con.getInputStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					is, "UTF-8"));
+			int ch = 0;
+			b = new StringBuffer();
+			while ((ch = reader.read()) != -1) {
+				b.append((char) ch);
+			}
+
+		} catch (IOException e) {
+			return null;
+		}
+		return b;
+
+	}
+
+	// 下載夢幻餐車
+	public StringBuffer downLoadDreamCart(URL url, String account) {
+		StringBuffer b = null;
+		try {
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setDoInput(true);
+			con.setDoOutput(true);
+			con.setUseCaches(false);
+			con.setRequestMethod("POST");
+
+			con.setRequestProperty("Connection", "Keep-Alive");
+			con.setRequestProperty("Accept-Charset", "UTF-8");
+			con.setRequestProperty("Content-Type",
+					"multipart/form-data; boundary=" + boundary);
+
+			DataOutputStream ds = new DataOutputStream(con.getOutputStream());
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=action" + end);
+			ds.writeBytes(end);
+			ds.writeBytes("downLoadDC");
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=account" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(account, "UTF-8"));
+			ds.writeBytes(end);
+
+			ds.flush();
+			ds.writeBytes(twoHyphens + boundary + twoHyphens + end);
+			ds.close();
+			// 接收雲端回傳的response
+			InputStream is = con.getInputStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					is, "UTF-8"));
+			int ch = 0;
+			b = new StringBuffer();
+			while ((ch = reader.read()) != -1) {
+				b.append((char) ch);
+			}
+
+		} catch (IOException e) {
+			return null;
+		}
+		return b;
+	}
+
+	// //////////////////////////////////////////////////////////////////////////////////////////
+	// 判斷已經產生的訂單的訂單狀態，用訂單編號去收尋(查詢歷史訂單用)
+	public StringBuffer findOrderState(URL url, String oSerial) {
+		StringBuffer b = null;
+		try {
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setDoInput(true);
+			con.setDoOutput(true);
+			con.setUseCaches(false);
+			con.setRequestMethod("POST");
+
+			con.setRequestProperty("Connection", "Keep-Alive");
+			con.setRequestProperty("Accept-Charset", "UTF-8");
+			con.setRequestProperty("Content-Type",
+					"multipart/form-data; boundary=" + boundary);
+
+			DataOutputStream ds = new DataOutputStream(con.getOutputStream());
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=action" + end);
+			ds.writeBytes(end);
+			ds.writeBytes("orderState");
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=oSerial" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(oSerial, "UTF-8"));
+			ds.writeBytes(end);
+
+			ds.flush();
+			ds.writeBytes(twoHyphens + boundary + twoHyphens + end);
+			ds.close();
+			// 接收雲端回傳的response
+			InputStream is = con.getInputStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					is, "UTF-8"));
+			int ch = 0;
+			b = new StringBuffer();
+			while ((ch = reader.read()) != -1) {
+				b.append((char) ch);
+			}
+
+		} catch (IOException e) {
+			return null;
+		}
+		return b;
+	}
+
+	// //////////////////////////////////////////////////////////////////////////////////////////
+	// 登入
+	public StringBuffer logIn(URL url, String id, String pwd) {
+		StringBuffer b = null;
+		try {
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setDoInput(true);
+			con.setDoOutput(true);
+			con.setUseCaches(false);
+			con.setRequestMethod("POST");
+
+			con.setRequestProperty("Connection", "Keep-Alive");
+			con.setRequestProperty("Accept-Charset", "UTF-8");
+			con.setRequestProperty("Content-Type",
+					"multipart/form-data; boundary=" + boundary);
+
+			DataOutputStream ds = new DataOutputStream(con.getOutputStream());
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=action" + end);
+			ds.writeBytes(end);
+			ds.writeBytes("logIn");
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=id" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(id, "UTF-8"));
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=pwd" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(pwd, "UTF-8"));
+			ds.writeBytes(end);
+
+			ds.flush();
+			ds.writeBytes(twoHyphens + boundary + twoHyphens + end);
+			ds.close();
+			// 接收雲端回傳的response
+			InputStream is = con.getInputStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					is, "UTF-8"));
+			int ch = 0;
+			b = new StringBuffer();
+			while ((ch = reader.read()) != -1) {
+				b.append((char) ch);
+			}
+
+		} catch (IOException e) {
+			return null;
+		}
+		return b;
+	}
+
+	// //////////////////////////////////////////////////////////////////////////////////////////
+	// 註冊
+	public StringBuffer signUp(URL url, ArrayList<String> signUpData) {
+		StringBuffer b = null;
+		try {
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setDoInput(true);
+			con.setDoOutput(true);
+			con.setUseCaches(false);
+			con.setRequestMethod("POST");
+
+			con.setRequestProperty("Connection", "Keep-Alive");
+			con.setRequestProperty("Accept-Charset", "UTF-8");
+			con.setRequestProperty("Content-Type",
+					"multipart/form-data; boundary=" + boundary);
+
+			DataOutputStream ds = new DataOutputStream(con.getOutputStream());
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=action" + end);
+			ds.writeBytes(end);
+			ds.writeBytes("signUp");
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=name" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(signUpData.get(0), "UTF-8"));// 姓名
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=phone" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(signUpData.get(1), "UTF-8"));// 電話
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=address" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(signUpData.get(2), "UTF-8"));// 地址
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=userId" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(signUpData.get(3), "UTF-8"));// 帳號
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=pwd" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(signUpData.get(4), "UTF-8"));// 密碼
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=Email" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(signUpData.get(6), "UTF-8"));// Email
+			ds.writeBytes(end);
+
+			ds.flush();
+			ds.writeBytes(twoHyphens + boundary + twoHyphens + end);
+			ds.close();
+			// 接收雲端回傳的response
+			InputStream is = con.getInputStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					is, "UTF-8"));
+			int ch = 0;
+			b = new StringBuffer();
+			while ((ch = reader.read()) != -1) {
+				b.append((char) ch);
+			}
+
+		} catch (IOException e) {
+			return null;
+		}
+		return b;
+	}
+
+	// //////////////////////////////////////////////////////////////////////////////////////////
+	// 載入所有套餐食物
+	public StringBuffer loadFoodSetData(URL url) {
+		StringBuffer b = null;
+		try {
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setDoInput(true);
+			con.setDoOutput(true);
+			con.setUseCaches(false);
+			con.setRequestMethod("POST");
+			con.setConnectTimeout(5000);
+
+			con.setRequestProperty("Connection", "Keep-Alive");
+			con.setRequestProperty("Accept-Charset", "UTF-8");
+			con.setRequestProperty("Content-Type",
+					"multipart/form-data; boundary=" + boundary);
+
+			DataOutputStream ds = new DataOutputStream(con.getOutputStream());
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=action" + end);
+			ds.writeBytes(end);
+			ds.writeBytes("foodset");
+			ds.writeBytes(end);
+			ds.flush();
+			ds.writeBytes(twoHyphens + boundary + twoHyphens + end);
+			ds.close();
+			// 接收雲端回傳的response
+			InputStream is = con.getInputStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					is, "UTF-8"));
+			int ch = 0;
+			b = new StringBuffer();
+			while ((ch = reader.read()) != -1) {
+				b.append((char) ch);
+			}
+
+		} catch (IOException e) {
+			return null;
+		}
+		return b;
+	}
+
+	// //////////////////////////////////////////////////////////////////////////////////////////
+	// 載入所有單點食物
+	public StringBuffer loadFoodData(URL url) {
+		StringBuffer b = null;
+		try {
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setDoInput(true);
+			con.setDoOutput(true);
+			con.setUseCaches(false);
+			con.setRequestMethod("POST");
+			con.setConnectTimeout(5000);
+
+			con.setRequestProperty("Connection", "Keep-Alive");
+			con.setRequestProperty("Accept-Charset", "UTF-8");
+			con.setRequestProperty("Content-Type",
+					"multipart/form-data; boundary=" + boundary);
+
+			DataOutputStream ds = new DataOutputStream(con.getOutputStream());
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=action" + end);
+			ds.writeBytes(end);
+			ds.writeBytes("food");
+			ds.writeBytes(end);
+			ds.flush();
+			ds.writeBytes(twoHyphens + boundary + twoHyphens + end);
+			ds.close();
+			// 接收雲端回傳的response
+			InputStream is = con.getInputStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					is, "UTF-8"));
+			int ch = 0;
+			b = new StringBuffer();
+			while ((ch = reader.read()) != -1) {
+				b.append((char) ch);
+			}
+
+		} catch (IOException e) {
+			return null;
+		}
+		return b;
+	}
+
+	// //////////////////////////////////////////////////////////////////////////////////////////
+
+	// 經由網址抓取需要的食物圖片並傳回
+	public Bitmap GetIconFromURL(String URLString) {
+		Bitmap b = null;
+		try {
+			URL url = new URL(URLString);
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			InputStream streamIn = conn.getInputStream();
+			ByteArrayOutputStream streamOut = new ByteArrayOutputStream();
+			byte[] buffer = new byte[1024];
+			int len = -1;
+			while ((len = streamIn.read(buffer)) != -1) {
+				streamOut.write(buffer, 0, len);
+			}
+			streamIn.close();
+			streamOut.close();
+			b = BitmapFactory.decodeByteArray(streamOut.toByteArray(), 0,
+					streamOut.toByteArray().length);
+		} catch (Exception e) {
+			return null;
+		}
+		return b;
+	}
+
+	// //////////////////////////////////////////////////////////////////////////////////////////
+	// 會員送出訂單
+	public StringBuffer accountSendOrdersToDataBase(URL url, Cart cart,
+			String id, String pwd) {
+		StringBuffer b = null;
+		try {
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setDoInput(true);
+			con.setDoOutput(true);
+			con.setUseCaches(false);
+			con.setRequestMethod("POST");
+			con.setConnectTimeout(5000);
+			// con.setReadTimeout(5000);
+
+			con.setRequestProperty("Connection", "Keep-Alive");
+			con.setRequestProperty("Accept-Charset", "UTF-8");
+			con.setRequestProperty("Content-Type",
+					"multipart/form-data; boundary=" + boundary);
+			con.connect();
+
+			DataOutputStream ds = new DataOutputStream(con.getOutputStream());
+			// 點餐的命令action的值設為order
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=action" + end);
+			ds.writeBytes(end);
+			ds.writeBytes("accountOrder");
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=cId" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(id, "UTF-8"));
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=cPassword"
+					+ end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(pwd, "UTF-8"));
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=caddress" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(cart.getCustomerAddress(), "UTF-8"));
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=cgetTime" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(cart.getTime(), "UTF-8"));
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=cgetWay" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(cart.getOrderType(), "UTF-8"));
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=state" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(ActSerchOrders.newOrderState,
+					"UTF-8"));
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=cname" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(cart.getCustomerName(), "UTF-8"));
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=cphone" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(cart.getCustomerPhone());
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=other" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(cart.getOther(), "UTF-8"));
+			ds.writeBytes(end);
+			// 所有購物車中的餐點轉成字串輸出
+			String foodStr = JsonFactory.GetJsonCodeFromCart();
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=items" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(foodStr, "UTF-8"));
+			ds.writeBytes(end);
+
+			ds.flush();
+			ds.writeBytes(twoHyphens + boundary + twoHyphens + end);
+			ds.close();
+
+			// 接收雲端回傳的response
+			InputStream is = con.getInputStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					is, "UTF-8"));
+			int ch = 0;
+			b = new StringBuffer();
+			while ((ch = reader.read()) != -1) {
+				b.append((char) ch);
+			}
+		} catch (IOException e) {
+			return null;
+		}
+		return b;
+	}
+
+	// 非會員送出訂單，將購物車中的資料送出
+	String end = "\r\n";
+	String twoHyphens = "--";
+	String boundary = "*****";
+
+	public StringBuffer sendOrdersToDataBase(URL url, Cart cart) {
+		StringBuffer b = null;
+		try {
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setDoInput(true);
+			con.setDoOutput(true);
+			con.setUseCaches(false);
+			con.setRequestMethod("POST");
+			con.setConnectTimeout(5000);
+			// con.setReadTimeout(5000);
+
+			con.setRequestProperty("Connection", "Keep-Alive");
+			con.setRequestProperty("Accept-Charset", "UTF-8");
+			con.setRequestProperty("Content-Type",
+					"multipart/form-data; boundary=" + boundary);
+			con.connect();
+
+			DataOutputStream ds = new DataOutputStream(con.getOutputStream());
+			// 點餐的命令action的值設為order
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=action" + end);
+			ds.writeBytes(end);
+			ds.writeBytes("order");
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=cname" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(cart.getCustomerName(), "UTF-8"));
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=cphone" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(cart.getCustomerPhone());
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=caddress" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(cart.getCustomerAddress(), "UTF-8"));
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=cgetTime" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(cart.getTime(), "UTF-8"));
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=cgetWay" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(cart.getOrderType(), "UTF-8"));
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=state" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(ActSerchOrders.newOrderState,
+					"UTF-8"));
+			ds.writeBytes(end);
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=other" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(cart.getOther(), "UTF-8"));
+			ds.writeBytes(end);
+
+			// 所有購物車中的餐點轉成字串輸出
+			String foodStr = JsonFactory.GetJsonCodeFromCart();
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=items" + end);
+			ds.writeBytes(end);
+			ds.writeBytes(URLEncoder.encode(foodStr, "UTF-8"));
+			ds.writeBytes(end);
+
+			ds.flush();
+			ds.writeBytes(twoHyphens + boundary + twoHyphens + end);
+			ds.close();
+
+			// 接收雲端回傳的response
+			InputStream is = con.getInputStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					is, "UTF-8"));
+			int ch = 0;
+			b = new StringBuffer();
+			while ((ch = reader.read()) != -1) {
+				b.append((char) ch);
+			}
+		} catch (IOException e) {
+			return null;
+		}
+		return b;
+	}
+
+	// //////////////////////////////////////////////////////////////////////////////////////////
+	// 抓取粉絲團的網址用的
+	public StringBuffer findFansUrl(URL url) {
+		StringBuffer b = null;
+		try {
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			con.setDoInput(true);
+			con.setDoOutput(true);
+			con.setUseCaches(false);
+			con.setRequestMethod("POST");
+
+			con.setRequestProperty("Connection", "Keep-Alive");
+			con.setRequestProperty("Accept-Charset", "UTF-8");
+			con.setRequestProperty("Content-Type",
+					"multipart/form-data; boundary=" + boundary);
+
+			DataOutputStream ds = new DataOutputStream(con.getOutputStream());
+
+			ds.writeBytes(twoHyphens + boundary + end);
+			ds.writeBytes("Content-Disposition: form-data; name=action" + end);
+			ds.writeBytes(end);
+			ds.writeBytes("fansUrl");
+			ds.writeBytes(end);
+
+			ds.flush();
+			ds.writeBytes(twoHyphens + boundary + twoHyphens + end);
+			ds.close();
+			// 接收雲端回傳的response
+			InputStream is = con.getInputStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					is, "UTF-8"));
+			int ch = 0;
+			b = new StringBuffer();
+			while ((ch = reader.read()) != -1) {
+				b.append((char) ch);
+			}
+
+		} catch (IOException e) {
+			return null;
+		}
+		return b;
+	}
+
+}

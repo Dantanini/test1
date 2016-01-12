@@ -1,0 +1,275 @@
+package tw.com.gear.prjmarcorder;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Log;
+
+//食物要能產生單點的和套餐的
+public class FoodFactory {
+	
+	private int foodIndex = 0;
+	private int foodTypeIndex = 0;//現在被選取的種類的index
+	private ArrayList<Food> subFoodlist;
+	private List<FoodSet> foodSetList;
+	
+	private ArrayList<ArrayList<Food>> foodMultiList;
+	public FoodFactory(){
+		
+	}
+	
+	//單點的工廠
+	//建構單點food(非網路連線來的資料)
+//	public FoodFactory(String[ ] serial, String[ ] foodName,int[ ] price, ArrayList<Bitmap> icon){
+//		foodLoad(serial, foodName, price, icon);
+//	}
+//	private void foodLoad(String[ ] serial, String[ ] foodName, int[ ] price, ArrayList<Bitmap> icon){
+//		foodlist = new ArrayList<Food>();
+//		int i = 0;
+//		for(String s : serial){
+//			Food f = new Food(s, foodName[i]);
+//			f.setIcon( icon.get(i) );
+//			f.setPrice(price[i]);
+//			foodlist.add(f);
+//			i++;
+//		}
+//	}
+
+//	//建構套餐(非網路連線來的資料)
+//	public FoodFactory(String[ ] setSerial, String[ ] foodSetName, ArrayList<Bitmap> foodSetIcon,
+//				String[ ][ ] serial, String[ ][ ] foodName,int[ ][ ] price, ArrayList<ArrayList<Bitmap>> foodIcon){
+//		foodSetLoad(setSerial, foodSetName, foodSetIcon, serial, foodName, price, foodIcon);
+//	}
+//	private void foodSetLoad(String[ ] setSerial, String[ ] foodSetName, ArrayList<Bitmap> foodSetIcon
+//			, String[ ][ ] serial, String[ ][ ] foodName,int[ ][ ] price, ArrayList<ArrayList<Bitmap>> foodIcon){
+//		foodSetList = new ArrayList<FoodSet>();
+//		
+//		for(int i = 0; i < setSerial.length; i++){
+//			Food mainFood = new Food(serial[i][0], foodName[i][0]);
+//			mainFood.setPrice(price[i][0]);
+//			mainFood.setType("set");
+//			mainFood.setIcon(foodIcon.get(i).get(0));
+//			mainFood.setAttrs("");
+//			Food subFood = new Food(serial[i][1], foodName[i][1]);
+//			subFood.setPrice(price[i][1]);
+//			subFood.setType("set");
+//			subFood.setIcon(foodIcon.get(i).get(1));
+//			subFood.setAttrs("");
+//			FoodSet f = new FoodSet(setSerial[i], foodSetName[i], mainFood, subFood);
+//			f.setIcon(foodSetIcon.get(i));
+//			f.setAttrs("");
+//			
+//			foodSetList.add(f);
+//		}
+//	}
+	/**
+	 在工廠內部建立一個空的ArraryList<Food>的集合，
+	 如果是使用FoodFactory()這個建構子產生的工廠物件，就必須要執行這個方法，但是需和CreateFoodSetList()則一執行
+	 */
+	public void CreateFoodList(){
+		foodMultiList = new ArrayList<ArrayList<Food>>();
+	}
+	public void CreateSubFoodList(){
+		subFoodlist = new ArrayList<Food>();
+	}
+	/**
+	 在工廠內部建立一個空的ArrayList<FoodSet>的集合，
+	 如果是使用FoodFactory()這個建構子產生的工廠物件，就必須要執行這個方法，但是需和CreateFoodList()則一執行
+	 */
+	public void CreateFoodSetList(){
+		foodSetList = new ArrayList<FoodSet>();
+	}
+//	public void SetFoodList(List<Food> foodlist){
+//		this.foodlist = foodlist;
+//	}
+//	public List<Food> GetFoodList(){
+//		return foodlist;
+//	}
+	
+	public void SetSubFoodList(ArrayList<Food> _subFoodList){
+		this.subFoodlist = _subFoodList;
+	}
+	public ArrayList<Food> GetSubFoodList(){
+		return this.subFoodlist;
+	}
+	public void SetFoodSetList(List<FoodSet> foodSetlist){
+		this.foodSetList = foodSetlist;
+	}
+	public List<FoodSet> GetFoodSetList(){
+		return this.foodSetList;
+	}
+//	public int count(){
+//		return foodlist.size();
+//	}
+	//抓取第i項的food物件(分類的)
+	public Food GetFoodListItem(int i){
+		if(foodMultiList != null){
+			return foodMultiList.get(foodTypeIndex).get(i);
+		}else{
+			return foodSetList.get(i);
+		}
+	}
+	//抓取第i項的food物件
+	public Food GetFoodItem(int i){
+		if(foodMultiList != null){
+			ArrayList<Food> fd = foodMultiList.get(foodTypeIndex);
+				return fd.get(i);				
+		}else{
+			return foodSetList.get(i);			
+		}
+	}
+	//設定在gallery顯示第幾張圖片的號碼
+	public int GetFoodIndex() {
+		return foodIndex;
+	}
+	public void SetFoodIndex(int foodIndex) {
+		this.foodIndex = foodIndex;
+	}
+	
+	//將產生的Food物件轉成ArrayList資料型態，目的是要給Intent傳送到下個activity
+	public static HashMap<String, Object> getListDataToIntent(Food food, int quantity){
+		HashMap<String, Object> data = new HashMap<String, Object>();
+		data.put("serial", food.getSerial());
+		data.put("quantity", quantity);
+		return data;
+	}
+	//將food物件的圖片抽出給imageAdapter顯示用(參數i是指種類的的是第幾種)
+	protected List<Bitmap> GetBitmapMultiList(int i) {
+		List<Bitmap> bList = new ArrayList<Bitmap>();
+		if(foodMultiList != null){
+			ArrayList<Food> fd = foodMultiList.get(i);
+			for(Food f : fd){
+				Bitmap b = f.getIcon();
+				bList.add(b);
+//				bList.add(new BitmapUtil().createReflectedBitmap(b));
+			}
+		}else{
+			for(FoodSet f : foodSetList){
+				Bitmap b = f.getIcon();
+				bList.add(b);
+//				bList.add(new BitmapUtil().createReflectedBitmap(b));
+			}
+		}
+		
+		return bList;
+	}
+
+	//將food物件的名稱、價格抽出給imageAdapter顯示用(參數i是指種類的的是第幾種)
+	protected List<String> GetTextMultiList(int i) {
+		List<String> bList = new ArrayList<String>();
+		if(foodMultiList != null){
+			ArrayList<Food> fd = foodMultiList.get(i);
+			for(Food f : fd){
+				String T = f.getName() + "  " + f.getPrice() + "元";
+				bList.add(T);
+//				bList.add(new BitmapUtil().createReflectedBitmap(b));
+			}
+		}else{
+			for(FoodSet f : foodSetList){
+				String T = f.getName() + " " 
+							+ f.getMainFood().getName()
+							+ "+"
+							+ f.getSubFood().getName()+" "
+							+ f.getPrice() + "元";
+				bList.add(T);
+//				bList.add(new BitmapUtil().createReflectedBitmap(b));
+			}
+		}
+		
+		return bList;
+	}
+	
+	
+	
+    //	將food物件的圖片抽出給imageAdapter顯示用
+//	protected List<Bitmap> GetBitmapList(){
+//		List<Bitmap> bList = new ArrayList<Bitmap>();
+//		if(foodlist != null){
+//			for(Food f : foodlist){
+//				bList.add(f.getIcon());
+//			}
+//		}else{
+//			for(FoodSet f : foodSetList){
+//				bList.add(f.getIcon());
+//			}
+//		}
+//		return bList;
+//	}
+//	protected List<Bitmap> GetBitmapList(){
+//		List<Bitmap> bList = new ArrayList<Bitmap>();
+//		for(FoodSet f : foodSetList){
+//			Bitmap b = f.getIcon();
+//			bList.add(b);
+////			bList.add(new BitmapUtil().createReflectedBitmap(b));
+//		}
+//		return bList;
+//	}
+	
+
+	//找出產品編號相同的Icon加入IconList,並傳回IconList
+//	public ArrayList<Bitmap> findIconListBySerial(ArrayList<OrderItem> orderList){
+//		ArrayList<Bitmap> iconList = new ArrayList<Bitmap>();
+//		for(int i = 0; i < orderList.size(); i++){
+//			for(Food d : foodlist){
+//				if(orderList.get(i).getSerial().equals(d.getSerial())){
+//					iconList.add(d.getIcon());
+//				
+//				}
+//			}
+//		}
+//		return iconList;
+//	}
+	/**
+	 * 找出產品編號相同的food物件，並傳回
+	 * */
+	public Object findBySerial(String serial){
+		if(foodSetList != null){	
+			for(int i =0; i < foodSetList.size(); i++){
+				if(serial.equals(foodSetList.get(i).getSerial())){					
+					return foodSetList.get(i);
+				}	
+			}
+		}else if(foodMultiList != null){
+			for(int i = 0; i < foodMultiList.size(); i++){
+				for(int j = 0; j < foodMultiList.get(i).size(); j++){
+					if(serial.equals(foodMultiList.get(i).get(j).getSerial())){
+						return foodMultiList.get(i).get(j);
+					}
+				}
+			}			
+		}else if(subFoodlist != null){
+			for(int i = 0;i < subFoodlist.size(); i++){
+				if(serial.equals(subFoodlist.get(i).getSerial())){
+					return subFoodlist.get(i);
+				}								
+			}
+		}
+		return null;
+	}
+
+	public List<ArrayList<Food>> getFoodMultiList() {
+		return foodMultiList;
+	}
+
+	public void setFoodMultiList(ArrayList<ArrayList<Food>> foodMultiList) {
+		this.foodMultiList = foodMultiList;
+	}
+	public void addFoodSubList(ArrayList<Food> subList){
+		this.foodMultiList.add(subList);
+	}
+
+	public int getFoodTypeIndex() {
+		return foodTypeIndex;
+	}
+
+	public void setFoodTypeIndex(int foodTypeIndex) {
+		this.foodTypeIndex = foodTypeIndex;
+	}
+
+
+}

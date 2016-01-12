@@ -1,0 +1,119 @@
+package tw.com.gear.prjmarcorder;
+
+
+import java.util.ArrayList;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.sax.StartElementListener;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.CompoundButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+public class ImageTextAdapterForFoodEdit extends BaseAdapter {
+	private LayoutInflater layoutInflater;
+
+
+			private ArrayList<OrderItem>itemList = new ArrayList<OrderItem>();
+			private ArrayList<Bitmap> iconList = new ArrayList<Bitmap>();
+			private int Quantity=0;
+	//單點訂購預覽頁面使用的建構子
+	public ImageTextAdapterForFoodEdit(Context context, OrderItem i, Bitmap b) {
+		layoutInflater = (LayoutInflater)context.getSystemService(android.content.Context.LAYOUT_INFLATER_SERVICE);
+		itemList.add(i);
+		iconList.add(b);
+		Quantity = i.getQuantity();
+	}
+	
+	class ViewHolder {
+		ImageView img;
+		TextView txtlist, txtQty;
+		Button btnSub, btnAdd;
+		CheckBox ckbOther;
+	}
+
+	@Override
+	public int getCount() {
+		return itemList.size();
+	}
+
+	@Override
+	public Object getItem(int position) {
+		return position;
+	}
+
+	@Override
+	public long getItemId(int position) {
+		return position;
+	}
+	//減號
+	OnClickListener viewHolderBtnSub_Click = new OnClickListener(){
+		@Override
+		public void onClick(View v) {
+			Quantity--;
+			if (Quantity < 1)
+				Quantity = 1;
+			((TextView)((LinearLayout)(v.getParent())).findViewById(R.id.txtLVI2_1)).setText("數量："+Quantity);			
+		}
+	};
+	//加號
+	OnClickListener viewHolderBtnAdd_Click = new OnClickListener(){
+		
+		@Override
+		public void onClick(View v) {
+			Quantity++;
+			if (Quantity > 99)
+				Quantity = 99;
+			((TextView)((LinearLayout)(v.getParent())).findViewById(R.id.txtLVI2_1)).setText("數量："+Quantity);
+		}
+		
+	};
+	
+	
+	ViewHolder viewHolder;
+	@Override
+	public View getView(int position, View convertView, ViewGroup parent) {
+        if (convertView == null) {
+            convertView = layoutInflater.inflate(R.layout.listview_item2, null);
+            viewHolder = new ViewHolder();
+            viewHolder.img = (ImageView) convertView.findViewById(R.id.LI2img);                
+            viewHolder.txtlist = (TextView) convertView.findViewById(R.id.txtLVI2list);
+            viewHolder.txtQty = (TextView) convertView.findViewById(R.id.txtLVI2_1);
+            viewHolder.btnSub = (Button) convertView.findViewById(R.id.btnLI2Change);
+            viewHolder.btnSub.setOnClickListener(viewHolderBtnSub_Click);
+            viewHolder.btnSub.setFocusable(false);//把Button的focus設為false才能抓到他的爸爸物件(ListView)的focus
+            viewHolder.btnAdd = (Button) convertView.findViewById(R.id.btnLI2Del);
+            viewHolder.btnAdd.setFocusable(false);
+            viewHolder.btnAdd.setOnClickListener(viewHolderBtnAdd_Click);
+            viewHolder.ckbOther = (CheckBox)convertView.findViewById(R.id.ckbLI2Other);
+            convertView.setTag(viewHolder);
+        } 
+        else {
+            viewHolder = (ViewHolder) convertView.getTag();
+        }
+        viewHolder.img.setImageBitmap(iconList.get(position));
+        viewHolder.txtlist.setText(itemList.get(position).getName()+"\r\n單價: "+
+        					itemList.get(position).getPrice());
+        if(itemList.get(position).getAttrs().equals("無"))
+        	viewHolder.ckbOther.setVisibility(View.GONE);
+        viewHolder.ckbOther.setChecked(itemList.get(position).getAttrsState());
+        viewHolder.ckbOther.setText(itemList.get(position).getAttrs()+" +"+itemList.get(position).getAttrsPrice()+"元");
+        viewHolder.txtQty.setText("數量："+Quantity);    
+        return convertView;
+    }
+	
+}	

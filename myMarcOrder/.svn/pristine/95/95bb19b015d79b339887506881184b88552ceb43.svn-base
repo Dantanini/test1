@@ -1,0 +1,153 @@
+package tw.com.gear.prjmarcorder;
+
+
+import java.util.ArrayList;
+
+import android.app.Activity;
+import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
+import android.os.Build;
+//附餐選擇頁面
+public class ActOrderItemSetToEdit extends Activity {
+
+	OrderItem item = new OrderItem();
+	ArrayList<Food> foodList = new ArrayList<Food>();
+	ArrayList<Bitmap> foodListIcon = new ArrayList<Bitmap>();
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		setContentView(R.layout.act_order_item_set_to_edit);
+		
+		InitialComponent();
+		
+		String getSerial = getIntent().getStringExtra("serial");
+		FoodSet fs = (FoodSet)ActMain.foodSetFactoryHttpList.findBySerial(getSerial);
+		for(String s : fs.getSetDetail()){
+			Food fd = (Food)ActMain.foodFactoryHttpListSetUse.findBySerial(s);
+			if(fd != null){
+				foodList.add(fd);
+				foodListIcon.add(fd.getIcon());
+			}
+		}
+		txtMsg.setText("請選擇飲料");
+		//判斷要執行購物車的程式還是預覽的程式
+		if(ActMain.previewFood.getName().equals("")){
+			//由購物車頁面進入此頁的判斷
+		String data = getIntent().getStringExtra("serial");
+			 item = ActMain.myCart.findBySetSerial(data);
+			for(Food f : foodList){
+				if(item.getSubFoodSerial().equals(f.getSerial())){
+					f.setSelected(true);
+					break;
+				}
+			}			
+		}else{			
+			//由預覽頁面進入此頁的判斷
+			FoodSet fsa = new FoodSet();
+			fsa = (FoodSet)ActMain.foodSetFactoryHttpList.findBySerial(ActMain.previewFood.getSerial());
+			//判斷套餐的副食是否有被改過，有，就把previewFood直接拿來使用，沒有，就把預設值的抓進來
+			if(fsa.getSubFood().getSerial().equals(ActMain.previewFood.getSubFoodSerial())){
+				for(Food f : foodList){
+					if(fsa.getSubFood().getSerial().equals(f.getSerial())){
+						f.setSelected(true);
+						break;
+					}
+				}
+			}else if(!fsa.getSubFood().getSerial().equals(ActMain.previewFood.getSubFoodSerial())){
+				for(Food f : foodList){
+					if(ActMain.previewFood.getSubFoodSerial().equals(f.getSerial())){
+						f.setSelected(true);
+						break;
+					}
+				}			
+			}
+		}
+
+		findViews();
+	}
+
+	ImageTextAdapterForFoodSetEdit listItemAdapter;
+	private void findViews() {
+		listItem = (ListView) findViewById(R.id.listOITESItem2);
+		listItemAdapter = new ImageTextAdapterForFoodSetEdit(ActOrderItemSetToEdit.this, foodList, foodListIcon); 
+		listItem.setAdapter(listItemAdapter); 
+		listItem.setOnItemClickListener(new OnItemClickListener() {
+			//listitem被按下時的event
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+				listItemAdapter.select(position);
+	
+			}
+		});
+	}
+
+	//重新返回本頁時，將所有listview更新
+	protected void onResume() {
+		listItem.invalidateViews();
+		super.onResume();
+	}
+	//取消編輯
+	OnClickListener btnCancel_Click = new OnClickListener() {
+		public void onClick(View arg0) {
+			for(Food f : foodList){
+				f.setSelected(false);
+			}
+			finish();
+		}
+	};
+	//編輯完成
+	OnClickListener btnOk_Click = new OnClickListener() {
+		public void onClick(View arg0) {
+			
+			if(ActMain.previewFood.getName().equals("")){
+				for(Food f : foodList){
+					if(f.isSelected() == true){
+						ActMain.myCart.findBySetSerial(item.getSerial()).setSubFoodName(f.getName());
+						ActMain.myCart.findBySetSerial(item.getSerial()).setSubFoodSerial(f.getSerial());
+						ActMain.myCart.findBySetSerial(item.getSerial()).setSubFoodPrice(f.getPrice());						
+						f.setSelected(false);
+						break;
+					}
+				}
+			}else{
+				for(Food f : foodList){
+					if(f.isSelected() == true){
+						ActMain.previewFood.setSubFoodName(f.getName());
+						ActMain.previewFood.setSubFoodSerial(f.getSerial());					
+						ActMain.previewFood.setSubFoodPrice(f.getPrice());					
+						f.setSelected(false);
+						break;
+					}
+				}
+			}
+			finish();
+		}
+	};
+	private void InitialComponent() {
+		btnCancel = (Button)findViewById(R.id.btnOITESCencel);
+		btnCancel.setOnClickListener(btnCancel_Click);
+		btnOk = (Button)findViewById(R.id.btnOITESOk);
+		btnOk.setOnClickListener(btnOk_Click);		
+		txtMsg = (TextView)findViewById(R.id.txtOITESMsg2);
+	}
+	Button btnCancel;
+	Button btnOk;
+	TextView txtMsg;
+	ListView listItem;
+}

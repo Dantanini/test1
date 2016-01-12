@@ -1,0 +1,259 @@
+package tw.com.gear.prjmarcorder;
+
+import java.util.Timer;
+import java.util.TimerTask;
+
+import android.app.Activity;
+import android.content.Context;
+import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.Display;
+import android.view.Gravity;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
+import android.os.Build;
+
+public class CitiesLittleActivity extends Activity {
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);// 設定此頁沒有標頭
+		setContentView(R.layout.cities_little_layout);
+		InitialComponent();
+	}
+
+	// 設定一次完整的地址和Tag以便資料保持正確
+	private void setLocationAndTag() {
+		String strLocation = "";
+		for (int i = 0; i < ActOrder.aryLocation.length; i++)
+			strLocation += ActOrder.aryLocation[i];// 將所有地址字串放入
+		txtLittleLocation.setText(strLocation);
+		ActOrder.btnStore.setTag(strLocation);
+	}
+
+	// 當使用者有輸入時的更新事件
+	TextWatcher etxt3Changed = new TextWatcher() {
+		public void onTextChanged(CharSequence s, int start, int before,
+				int count) {
+			// 判斷有字就更新所有地址為此字加上其單位
+			if (!etxt3.getText().toString().trim().equals(""))
+				ActOrder.aryLocation[3] = s + "巷";
+			// 若沒字就讓他為空白，不要影響地址
+			else
+				ActOrder.aryLocation[3] = "";
+			setLocationAndTag();
+		}
+
+		public void beforeTextChanged(CharSequence s, int start, int count,
+				int after) {
+
+		}
+
+		public void afterTextChanged(Editable s) {
+
+		}
+	};
+	// 當使用者有輸入時的更新事件
+	TextWatcher etxt4Changed = new TextWatcher() {
+		public void onTextChanged(CharSequence s, int start, int before,
+				int count) {
+			if (!etxt4.getText().toString().trim().equals(""))
+				ActOrder.aryLocation[4] = s + "弄";
+			else
+				ActOrder.aryLocation[4] = "";
+			setLocationAndTag();
+		}
+
+		public void beforeTextChanged(CharSequence s, int start, int count,
+				int after) {
+
+		}
+
+		public void afterTextChanged(Editable s) {
+
+		}
+	};
+	// 當使用者有輸入時的更新事件
+	TextWatcher etxt5Changed = new TextWatcher() {
+		public void onTextChanged(CharSequence s, int start, int before,
+				int count) {
+			if (!etxt5.getText().toString().trim().equals(""))
+				ActOrder.aryLocation[5] = s + "號";
+			else
+				ActOrder.aryLocation[5] = "";
+			setLocationAndTag();
+		}
+
+		public void beforeTextChanged(CharSequence s, int start, int count,
+				int after) {
+
+		}
+
+		public void afterTextChanged(Editable s) {
+
+		}
+	};
+	// 當使用者有輸入時的更新事件
+	TextWatcher etxt6Changed = new TextWatcher() {
+		public void onTextChanged(CharSequence s, int start, int before,
+				int count) {
+			if (!etxt6.getText().toString().trim().equals(""))
+				ActOrder.aryLocation[6] = s + "樓";
+			else
+				ActOrder.aryLocation[6] = "";
+			setLocationAndTag();
+		}
+
+		public void beforeTextChanged(CharSequence s, int start, int count,
+				int after) {
+
+		}
+
+		public void afterTextChanged(Editable s) {
+
+		}
+	};
+	// 當使用者有輸入時的更新事件
+	TextWatcher etxt7Changed = new TextWatcher() {
+		public void onTextChanged(CharSequence s, int start, int before,
+				int count) {
+			if (!etxt7.getText().toString().trim().equals(""))
+				ActOrder.aryLocation[7] = "-" + s.toString();// 這行的字不一樣，因為他是前面要加上"-"
+			else
+				ActOrder.aryLocation[7] = "";
+			setLocationAndTag();
+		}
+
+		public void beforeTextChanged(CharSequence s, int start, int count,
+				int after) {
+
+		}
+
+		public void afterTextChanged(Editable s) {
+
+		}
+	};
+
+	// 確定地址無誤的事件
+	private void isYourLocationRight() {
+		String strLocation = "";
+		for (int i = 0; i < ActOrder.aryLocation.length; i++)
+			strLocation += ActOrder.aryLocation[i];
+		txtLittleLocation.setText(strLocation);
+		ActOrder.btnStore.setTag(strLocation);
+		ActOrder.btnStore.setText(strLocation);
+		finish();
+
+		// 下面只是很普通的動畫設置
+		int version = Integer.valueOf(android.os.Build.VERSION.SDK_INT);
+		if (version >= 5) {
+			overridePendingTransition(R.anim.zoominfrombottom2,
+					R.anim.zoomoutfromtop);
+		}
+	}
+
+	/** 設定所有巷弄內的文字，如果上一次有填寫紀錄，第二次開啟會直接被叫進來，為了避免有類似"XX弄弄"重複後面的單位詞的問題，都要去掉最後一個字 */
+	private void setETxtText(EditText etxt, int i) {
+		if (!ActOrder.aryLocation[i].equals(""))
+			etxt.setText(ActOrder.aryLocation[i].substring(0,
+					ActOrder.aryLocation[i].length() - 1));
+	}
+
+	// 更改回車鍵事件
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);// 取得小鍵盤
+		// 如果小鍵盤目前是開啟狀態
+		if (imm.isActive()) {
+			if (keyCode == KeyEvent.KEYCODE_BACK) {
+				imm.hideSoftInputFromWindow(etxt3.getWindowToken(), 0);// 關閉小鍵盤，其實這個沒甚麼意義
+			}
+		}
+		return super.onKeyDown(keyCode, event);
+	}
+
+	// 這個已經沒有意義了
+	// OnClickListener setViewToTop = new OnClickListener() {
+	// public void onClick(View v) {
+	// getWindow().setGravity(Gravity.TOP); // 設定目前視窗的位置
+	// }
+	// };
+
+	// 初始化所有參數
+	private void InitialComponent() {
+		txtLittleLocation = (TextView) findViewById(R.id.txtLittleLocation);
+
+		setLocationAndTag();// 這邊的目的是要更新標頭
+
+		btnSure = (Button) findViewById(R.id.btnSure);
+		btnSure.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				isYourLocationRight();// 地址填寫正確嗎?的事件
+			}
+		});
+		etxt3 = (EditText) findViewById(R.id.etxt3);
+		// 因為存入的字體會是"XX弄"，多一個弄字，如果再更改再開啟就會變成"XX弄弄"，所以每次取資料都要去掉最後一個字
+		setETxtText(etxt3, 3);
+		etxt3.addTextChangedListener(etxt3Changed);
+		etxt4 = (EditText) findViewById(R.id.etxt4);
+		setETxtText(etxt4, 4);
+		etxt4.addTextChangedListener(etxt4Changed);
+		etxt5 = (EditText) findViewById(R.id.etxt5);
+		setETxtText(etxt5, 5);
+		etxt5.addTextChangedListener(etxt5Changed);
+		etxt6 = (EditText) findViewById(R.id.etxt6);
+		setETxtText(etxt6, 6);
+		etxt6.addTextChangedListener(etxt6Changed);
+
+		etxt7 = (EditText) findViewById(R.id.etxt7);
+		// 這個必須另外寫，因為他的最後一個字是資料，不是像"巷"、"弄"那些沒意義的字，也不會造成重複問題，所以這個應該取的是去掉一開始的"-"之後的字
+		if (!ActOrder.aryLocation[7].equals(""))
+			etxt7.setText(ActOrder.aryLocation[7].substring(1));
+		etxt7.addTextChangedListener(etxt7Changed);// 這串事件和前面幾個比較不一樣，因為他是前面要加上"-"
+
+		// 以下為設置此Activity的大小用的
+		WindowManager m = (WindowManager) this
+				.getSystemService(Context.WINDOW_SERVICE);// 先取得畫面管理員
+		Display d = m.getDefaultDisplay(); // 獲得目前的螢幕寬、高
+		LayoutParams p = getWindow().getAttributes(); // 獲得對話框目前的參數值，以便下面開始設置其眾多參數，例如寬高
+		p.height = (int) (d.getHeight() * 0.3); // 設定高度
+		// p.width = (int) (d.getWidth() * 0.8); // 設定寬度
+		p.alpha = 1.0f; // 設定透明度
+		p.dimAmount = 0.5f; // 設定黑暗度，等等...這三小?
+		getWindow().setAttributes(p); // 將這個屬性回傳給目前視窗
+		getWindow().setGravity(Gravity.TOP); // 設定目前視窗的位置
+		//
+		// Timer timer = new Timer(); // 设置定时器
+		// timer.schedule(new TimerTask() {
+		// @Override
+		// public void run() { // 弹出软键盘的代码
+		// InputMethodManager imm = (InputMethodManager)
+		// getSystemService(Context.INPUT_METHOD_SERVICE);
+		// imm.showSoftInput(etxt3, InputMethodManager.RESULT_SHOWN);
+		// imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,
+		// InputMethodManager.HIDE_IMPLICIT_ONLY);
+		// }
+		// }, 300); // 设置300毫秒的时长
+	}
+
+	// 變數宣告區
+	TextView txtLittleLocation;
+	Button btnSure;
+	EditText etxt3, etxt4, etxt5, etxt6, etxt7;
+}

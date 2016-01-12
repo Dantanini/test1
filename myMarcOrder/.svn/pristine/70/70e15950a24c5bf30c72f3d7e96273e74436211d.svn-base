@@ -1,0 +1,477 @@
+package tw.com.gear.prjmarcorder;
+
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Point;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
+import android.view.Display;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
+
+public class ActSerchOrders extends Activity {
+	public final static int orderSerial = 1;
+	public final static int orderGatTime = 2;
+	public final static int orderGatWay = 3;
+	public final static int orderName = 4;
+	public final static int orderPhone = 5;
+	public final static int orderState = 6;
+	public final static int orderAddress = 7;
+
+	public final static int detailSerial = 1;
+	public final static int detailId = 2;
+	public final static int detailName = 3;
+	public final static int detailType = 4;
+	public final static int detailMfId = 5;
+	public final static int detailMfName = 6;
+	public final static int detailSfId = 7;
+	public final static int detailSfName = 8;
+	public final static int detailQty = 9;
+	public final static int detailPrice = 10;
+	public final static int detailAttrState = 11;
+	public final static int detailAttrs = 12;
+	public final static int detailAttrsPrice = 13;
+	
+	public final static String newOrderState = "新訂單";
+	private static String msgResult = "";
+	private final int GUI_OK = 0x101;
+	ArrayList<Orders> orders = new ArrayList<Orders>();
+	ArrayList<Bitmap> itemsBitmap = new ArrayList<Bitmap>();
+	ProgressDialog myDialog;
+	Thread myThread;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		this.setContentView(R.layout.act_serch_orders);
+		InitialComponent();
+		test();
+		findViews();
+		if (checkInternet(ActSerchOrders.this) == false) {
+			MyToast.Show(ActSerchOrders.this, "請檢查網路連線!");
+			return;
+		}
+//		myDialog = ProgressDialog.show(ActSerchOrders.this, "連線中", "請稍後...",
+//				true, true, new DialogInterface.OnCancelListener() {
+//					public void onCancel(DialogInterface dialog) {
+//						myDialog.dismiss();
+//					}
+//				});
+//		myDialog.setCanceledOnTouchOutside(false);
+//		refresh();
+//		myThread.start();
+	}
+
+	Handler myMessageHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			// super.handleMessage(msg);
+			switch (msg.what) {
+			case GUI_OK:
+				if (msgResult.equals("finishToShow")){
+					listItemAdapter.notifyDataSetChanged();
+				}
+				break;
+			}
+
+		}
+
+	};
+	//===========================================================================================================================
+	private void refresh(){
+		
+		myThread = new Thread() {
+			public void run() {
+				try {
+					//將所有資料清空，重新抓取資料
+					itemsBitmap.clear();
+					orders.clear();
+					// /////////////////////////////////////////////////
+					// 先用SQLite中的訂單狀態是"處理中"的訂單編號，到雲端尋找該筆訂單的訂單狀態並存回
+					// 1.先收尋出SQLite所有的訂單編號存入ArrayList
+					SQLiteMenagement manger = new SQLiteMenagement(
+							ActSerchOrders.this);
+					Cursor table = manger.Select("SELECT  *  FROM Ordered");
+					ArrayList<String> tmp1 = new ArrayList<String>();
+					HashMap<String, String> tableTmp = new HashMap<String, String>();
+					table.moveToFirst();
+					for (int tableInt = 0; tableInt < table.getCount(); tableInt++) {
+						tmp1.add(table.getString(1));
+						table.moveToNext();
+					}
+					// 2.收尋雲端的資料庫將ArrayList中的訂單編號的訂單狀態抓下來，存入HashMap中
+					URL url = new URL(ActMain.webpage);
+					for (String oSerial : tmp1) {
+						String tmpStr = "";
+						tmpStr = new DataBaseManagement()
+						.findOrderState(url, oSerial).toString().trim();
+//						sleep(200);
+						tableTmp.put(oSerial, tmpStr);
+					}
+					// 3.將HashMap中的資料寫回SQLite
+					for (Object oSerial : tableTmp.keySet()) {
+						ContentValues data = new ContentValues();
+						data.put("oState", tableTmp.get(oSerial));
+						manger.Update("Ordered", data, oSerial.toString());
+					}
+					
+//				// 將訂單狀態是"完成"的訂單刪除到只剩三筆
+//				Cursor finishTable = manger
+//						.Select("SELECT oSerial FROM Ordered WHERE oState='完成'");
+//				if (finishTable.getCount() > 3) {
+//					finishTable.moveToPosition(finishTable.getCount() - 4);
+//					for (int i = 0; i < finishTable.getCount() - 3; i++) {
+//						// 刪除該筆訂單
+//						manger.Delete("Ordered", finishTable.getString(0));
+//						finishTable.moveToPrevious();
+//					}
+//				}
+					
+					// 將超過10筆的訂單都刪除
+					Cursor allTable = manger.Select("SELECT oSerial FROM Ordered");
+					allTable.moveToFirst();
+					if(allTable.getCount()>10){
+						int deleteCount = allTable.getCount()-10;
+						
+						for(int i = 0; i < deleteCount; i++){
+							manger.Delete("Ordered", allTable.getString(0));
+							manger.Delete("OrderDetail", allTable.getString(0));
+							allTable.moveToNext();
+						}
+					}
+					
+					
+					
+					// 找出所有的訂單，存進集合去顯示
+//				SQLiteMenagement manger = new SQLiteMenagement(
+//						ActSerchOrders.this);
+					Cursor orderTtable = manger
+							.Select("SELECT  *  FROM Ordered");
+					Cursor detailTable = manger
+							.Select("SELECT  *  FROM OrderDetail");
+					orderTtable.moveToLast();
+					for (int i = 0; i < orderTtable.getCount(); i++) {
+						Orders order = new Orders();
+						order.setOrdersSerial(orderTtable
+								.getString(orderSerial));
+						order.setTime(orderTtable.getString(orderGatTime));
+						order.setOrderType(orderTtable.getString(orderGatWay));
+						order.setCustomerName(orderTtable.getString(orderName));
+						order.setCustomerPhone(orderTtable
+								.getString(orderPhone));
+						order.setOrdersState(orderTtable.getString(orderState));
+						order.setCustomerAddress(orderTtable
+								.getString(orderAddress));
+						orders.add(order);
+						itemsBitmap.add(BitmapFactory.decodeResource(
+								getResources(), R.drawable.ic_launcher));
+						orderTtable.moveToPrevious();
+					}
+					for (Orders or : orders) {
+						detailTable.moveToFirst();
+						for (int j = 0; j < detailTable.getCount(); j++) {
+							if (or.getOrdersSerial().equals(
+									detailTable.getString(detailSerial))) {
+								OrderItem orderItem = new OrderItem();
+								orderItem.setSerial(detailTable
+										.getString(detailId));
+								orderItem.setName(detailTable
+										.getString(detailName));
+								orderItem.setType(detailTable
+										.getString(detailType));
+								orderItem.setMainFoodSerial(detailTable
+										.getString(detailMfId));
+								orderItem.setMainFoodName(detailTable
+										.getString(detailMfName));
+								orderItem.setSubFoodSerial(detailTable
+										.getString(detailSfId));
+								orderItem.setSubFoodName(detailTable
+										.getString(detailSfName));
+								orderItem.setQuantity(detailTable
+										.getInt(detailQty));
+								orderItem.setPrice(detailTable
+										.getInt(detailPrice));
+								orderItem.setAttrs(detailTable
+										.getString(detailAttrs));
+								orderItem.setAttrsPrice(detailTable
+										.getInt(detailAttrsPrice));
+								if(detailTable.getInt(detailAttrState) == 1)
+									orderItem.setAttrsState(true);
+								else
+									orderItem.setAttrsState(false);
+								
+								or.add(orderItem);
+							}
+							detailTable.moveToNext();
+						}
+					}
+					
+					msgResult = "finishToShow";
+					Message msg = new Message();
+					msg.what = GUI_OK;
+					ActSerchOrders.this.myMessageHandler.sendMessage(msg);
+					
+					// /////////////////////////////////////////////////
+				} catch (Exception e) {
+					e.printStackTrace();
+					MyToast.Show(ActSerchOrders.this, "error");
+				} finally {
+					
+					myDialog.dismiss();
+				}
+			}
+		};
+	}
+	//===========================================================================================================================
+	
+	public void test(){
+		SQLiteMenagement manger = new SQLiteMenagement(
+				ActSerchOrders.this);
+		Cursor orderTtable = manger
+				.Select("SELECT  *  FROM Ordered");
+		Cursor detailTable = manger
+				.Select("SELECT  *  FROM OrderDetail");
+		orderTtable.moveToLast();
+		for (int i = 0; i < orderTtable.getCount(); i++) {
+			Orders order = new Orders();
+			order.setOrdersSerial(orderTtable
+					.getString(orderSerial));
+			order.setTime(orderTtable.getString(orderGatTime));
+			order.setOrderType(orderTtable.getString(orderGatWay));
+			order.setCustomerName(orderTtable.getString(orderName));
+			order.setCustomerPhone(orderTtable
+					.getString(orderPhone));
+			order.setOrdersState(orderTtable.getString(orderState));
+			order.setCustomerAddress(orderTtable
+					.getString(orderAddress));
+			orders.add(order);
+			itemsBitmap.add(BitmapFactory.decodeResource(
+					getResources(), R.drawable.ic_launcher));
+			orderTtable.moveToPrevious();
+		}
+		for (Orders or : orders) {
+			detailTable.moveToFirst();
+			for (int j = 0; j < detailTable.getCount(); j++) {
+				if (or.getOrdersSerial().equals(
+						detailTable.getString(detailSerial))) {
+					OrderItem orderItem = new OrderItem();
+					orderItem.setSerial(detailTable
+							.getString(detailId));
+					orderItem.setName(detailTable
+							.getString(detailName));
+					orderItem.setType(detailTable
+							.getString(detailType));
+					orderItem.setMainFoodSerial(detailTable
+							.getString(detailMfId));
+					orderItem.setMainFoodName(detailTable
+							.getString(detailMfName));
+					orderItem.setSubFoodSerial(detailTable
+							.getString(detailSfId));
+					orderItem.setSubFoodName(detailTable
+							.getString(detailSfName));
+					orderItem.setQuantity(detailTable
+							.getInt(detailQty));
+					orderItem.setPrice(detailTable
+							.getInt(detailPrice));
+					orderItem.setAttrs(detailTable
+							.getString(detailAttrs));
+					orderItem.setAttrsPrice(detailTable
+							.getInt(detailAttrsPrice));
+					if(detailTable.getInt(detailAttrState) == 1)
+						orderItem.setAttrsState(true);
+					else
+						orderItem.setAttrsState(false);
+					
+					or.add(orderItem);
+				}
+				detailTable.moveToNext();
+			}
+		}
+	}
+	android.content.DialogInterface.OnClickListener QRconfirm_Click = new android.content.DialogInterface.OnClickListener() {
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			// TODO Auto-generated method stub
+
+		}
+	};
+
+	public boolean checkInternet(android.content.Context context) {
+		boolean result = false;
+		ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo info = connManager.getActiveNetworkInfo();
+		if (info == null || !info.isConnected()) {
+			result = false;
+		} else {
+			if (!info.isAvailable()) {
+				result = false;
+			} else {
+				result = true;
+			}
+		}
+		return result;
+	}
+
+	ImageTextAdapterForSerchOrders listItemAdapter;
+	private void findViews() {
+		listItem = (ListView) findViewById(R.id.listItemASO2);
+		listItemAdapter = new ImageTextAdapterForSerchOrders(this, orders,
+				itemsBitmap);
+		listItem.setAdapter(listItemAdapter);
+		listItem.setOnItemLongClickListener(new OnItemLongClickListener() {
+			@SuppressLint("NewApi")
+			@Override
+			public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+					int arg2, long arg3) {
+				// 控制QR碼長寬
+				WindowManager manger = (WindowManager) getSystemService(WINDOW_SERVICE);
+				Display display = manger.getDefaultDisplay();
+				Point point = new Point();
+				display.getSize(point);
+				int width = point.x;
+				int height = point.y;
+				int smallerDimension = width < height ? width : height;
+				smallerDimension = smallerDimension * 3 / 4;
+
+				String s = orders.get(arg2).getOrdersSerial();
+				Bitmap bitmap = null;
+				ImageView imgview1 = new ImageView(ActSerchOrders.this);
+				QRCodeEncoder qrCodeEncoder = new QRCodeEncoder(s, null,
+						Contents.Type.TEXT, BarcodeFormat.QR_CODE.toString(),
+						smallerDimension);
+				try {
+					bitmap = qrCodeEncoder.encodeAsBitmap();
+					imgview1.setImageBitmap(bitmap);
+				} catch (WriterException e) {
+					e.printStackTrace();
+				}
+
+				new AlertDialog.Builder(ActSerchOrders.this)
+						.setTitle("QRcode")
+						.setMessage(
+								"這筆訂單的QR碼"
+										+ "\r\n如有任何問題，請洽\r\n    (日)07-7261295\r\n    (夜)07-8215583")
+						.setView(imgview1)
+						.setNegativeButton("確定", QRconfirm_Click).show();
+				return false;
+			}
+		});
+		listItem.setOnItemClickListener(new OnItemClickListener() {
+			// listitem被按下時的event
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+
+				listItemAdapter.select(position);
+
+			}
+		});
+	}
+	//刷新訂單狀態資料
+	OnClickListener btnReflash_Click = new OnClickListener() {
+		public void onClick(View v) {
+			refresh();
+			myDialog = ProgressDialog.show(ActSerchOrders.this, "連線中", "請稍後...",
+					true, true, new DialogInterface.OnCancelListener() {
+						public void onCancel(DialogInterface dialog) {
+							myDialog.dismiss();
+						}
+					});
+			myDialog.setCanceledOnTouchOutside(false);
+			myThread.start();
+		}
+	};
+	OnClickListener back_Click = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			goBack();
+		}
+	};
+	OnClickListener confirm_Click = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			for (Orders o : orders) {
+				if (o.isSelected() == true) {
+					Intent intent = new Intent(ActSerchOrders.this,
+							ActOrder.class);
+					intent.putExtra("action", o.getOrdersSerial());
+					startActivity(intent);
+					finish();
+					int version = Integer
+							.valueOf(android.os.Build.VERSION.SDK_INT);
+					if (version >= 5) {
+						overridePendingTransition(R.anim.zoomlittlemove,
+								R.anim.zoomoutfrombottom100);
+					}
+				}
+			}
+		}
+	};
+
+	// 更改回車鍵事件，讓使用者按下上一頁不是整個頁面關掉回到首頁，而是網頁回上一頁
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		goBack();
+		return true;
+	}
+
+	private void goBack() {
+		finish();
+		int version = Integer.valueOf(android.os.Build.VERSION.SDK_INT);
+		if (version >= 5) {
+			overridePendingTransition(R.anim.zoomstopmove,
+					R.anim.zoomoutfrombottom100);
+		}
+	}
+
+	private void InitialComponent() {
+		btnBack = (Button) findViewById(R.id.btnASOCencel);
+		btnBack.setOnClickListener(back_Click);
+		btnconfirm = (Button) findViewById(R.id.btnASOOk);
+		btnconfirm.setOnClickListener(confirm_Click);
+		btnRefresh = (ImageButton) findViewById(R.id.btnASORefresh);
+		btnRefresh.setOnClickListener(btnReflash_Click);
+	}
+
+	Button btnBack;
+	Button btnconfirm;
+	ImageButton btnRefresh;
+	ListView listItem;
+}

@@ -1,0 +1,142 @@
+package tw.com.gear.prjmarcorder;
+
+import java.util.ArrayList;
+
+//購物車，經過(UI介面)點餐的行為，會將Food物件轉成OrderItem物件，並存入購物車，當送出後會轉成Orders類別
+public class Cart {
+
+	private ArrayList<OrderItem> OrderItemList = new ArrayList<OrderItem>();//所有餐點
+	private String orderType = "";//點餐方式
+	private String time = "";//取餐時間
+	private String customerName = "";//顧客姓名
+	private String customerPhone = "";//顧客電話
+	private String customerAddress = "";//顧客地址
+	private Boolean isMember=false;//會員(預設：非會員)
+	private String other = "";//備註
+	
+	public Cart(){
+	}
+	public Cart(String _orderType, String _time){
+		this.orderType = _orderType;
+		this.time = _time;
+	}
+	
+	public void add(OrderItem item){
+		OrderItemList.add(item);
+	}
+	public OrderItem GetOrderItem(int index){
+		return OrderItemList.get(index);
+	}
+
+	public ArrayList<OrderItem> getOrderList() {
+		return OrderItemList;
+	}
+
+	public void setOrderList(ArrayList<OrderItem> orderList) {
+		OrderItemList = orderList;
+	}
+	public int GetTotalPrice(){
+		int price = 0;
+		for(OrderItem o : OrderItemList){
+			if(o.getAttrsState()){
+				price += o.getPrice()*o.getQuantity() + o.getAttrsPrice()*o.getQuantity();				
+			}else{
+				price += o.getPrice()*o.getQuantity();								
+			}
+		}
+		return price;
+	}
+	public String getOrderType() {
+		return orderType;
+	}
+
+	public void setOrderType(String orderType) {
+		this.orderType = orderType;
+	}
+
+	public String getTime() {
+		return time;
+	}
+
+	public void setTime(String time) {
+		this.time = time;
+	}
+
+	public String getCustomerName() {
+		return customerName;
+	}
+
+	public void setCustomerName(String customerName) {
+		this.customerName = customerName;
+	}
+
+	public String getCustomerPhone() {
+		return customerPhone;
+	}
+
+	public void setCustomerPhone(String customerPhone) {
+		this.customerPhone = customerPhone;
+	}
+
+	public String getCustomerAddress() {
+		return customerAddress;
+	}
+
+	public void setCustomerAddress(String customerAddress) {
+		this.customerAddress = customerAddress;
+	}
+
+	public Boolean getIsMember() {
+		return isMember;
+	}
+
+	public void setIsMember(Boolean isMember) {
+		this.isMember = isMember;
+	}
+
+	public String getOther() {
+		return other;
+	}
+
+	public void setOther(String other) {
+		this.other = other;
+	}
+
+	/**
+	 * 用serial找出所有的訂單項目
+	 * */
+	public OrderItem findBySerial(String data) {
+		OrderItem oi=null;
+		for(OrderItem o : OrderItemList){
+			if(o.getSerial().equals(data)){
+				oi = o;
+			}
+		}
+		return oi;
+	}
+	/**
+	 * 用serial找出單點的訂單項目
+	 * */
+	public OrderItem findBysingleSerial(String data) {
+		OrderItem oi=null;
+		for(OrderItem o : OrderItemList){
+			if(o.getSerial().equals(data) && !o.getType().equals(ActMain.foodSetString)){
+				oi = o;
+			}
+		}
+		return oi;
+	}
+	
+	/**
+	 * 用serial找出套餐的訂單項目
+	 * */
+	public OrderItem findBySetSerial(String data) {
+		OrderItem oi=null;
+		for(OrderItem o : OrderItemList){
+			if(o.getSerial().equals(data) && o.getType().equals(ActMain.foodSetString)){
+				oi = o;
+			}
+		}
+		return oi;
+	}
+}

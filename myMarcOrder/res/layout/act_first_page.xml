@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFE7CD" >
+
+    <LinearLayout
+        android:id="@+id/layoutFP1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true" >
+
+        <Button
+            android:id="@+id/btnHome"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="1dp"
+            android:layout_weight="2"
+            android:background="@drawable/button_red"
+            android:minHeight="35dp"
+            android:text="首頁"
+            android:textColor="#ffffff" />
+
+        <TextView
+            android:id="@+id/lblOrder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:minHeight="35dp"
+            android:text="選擇餐點"
+            android:textColor="#FA0300"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnCheckOut"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="1dp"
+            android:layout_weight="2"
+            android:background="@drawable/button_red"
+            android:minHeight="35dp"
+            android:text="結帳"
+            android:textColor="#ffffff" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutFP2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/layoutFP1" >
+
+        <!--
+              <Button
+            android:id="@+id/btnFPPackage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="0.2dp"
+            android:layout_marginTop="0.4dp"
+            android:layout_weight="1"
+            android:background="@drawable/button_blue"
+            android:minHeight="35dp"
+            android:text="素食"
+            android:textColor="#ffffff" />
+        -->
+
+        <Button
+            android:id="@+id/btnFPSingle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="0.2dp"
+            android:layout_marginTop="0.4dp"
+            android:layout_weight="1"
+            android:background="@drawable/button_blue"
+            android:minHeight="35dp"
+            android:text="點擊此處選擇其他種類食物"
+            android:textColor="#ffffff" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutFP3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/lblAFPTotal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="總計："
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/btnCart"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/button_blue"
+            android:minHeight="32sp"
+            android:text="查看購物車"
+            android:textColor="#ffffff" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btnAddToCart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/layoutFP3"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="15dp"
+        android:background="@drawable/button_red"
+        android:minHeight="30sp"
+        android:minWidth="120sp"
+        android:text="加入購物車"
+        android:textColor="#FFFFFF" />
+
+    <TextView
+        android:id="@+id/lblQuantity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/btnAddToCart"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        android:text="數量： 0"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:id="@+id/layoutFP4"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/lblQuantity"
+        android:layout_below="@id/layoutFP2"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="8sp"
+        android:orientation="vertical" >
+
+        <at.technikum.mti.fancycoverflow.FancyCoverFlow
+            android:id="@+id/galleryFPG1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btnFPSub"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/btnAddToCart"
+        android:layout_marginBottom="15dp"
+        android:layout_marginRight="30dp"
+        android:layout_toLeftOf="@id/lblQuantity"
+        android:minHeight="20dp"
+        android:minWidth="20dp"
+        android:text="─"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/btnFPAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/btnAddToCart"
+        android:layout_marginBottom="15dp"
+        android:layout_marginLeft="30dp"
+        android:layout_toRightOf="@id/lblQuantity"
+        android:minHeight="20sp"
+        android:minWidth="20sp"
+        android:text="+"
+        android:textColor="#FFFFFF" />
+
+</RelativeLayout>

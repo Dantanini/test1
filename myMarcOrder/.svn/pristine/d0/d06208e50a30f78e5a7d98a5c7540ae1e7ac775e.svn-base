@@ -1,0 +1,55 @@
+package tw.com.gear.prjmarcorder;
+
+import java.util.ArrayList;
+
+import android.graphics.Bitmap;
+
+//套餐類別，可放入主餐和附餐(餐點可以更改，但不可刪除)
+public class FoodSet extends Food {
+
+	//private String serial;//該物件的編號
+	//private String name;//該套餐的名稱
+	//private ArrayList<Food> foodset = new ArrayList<Food>();//該套餐的集合
+	private Food mainFood;
+	private Food subFood;
+	private ArrayList<String> setDetail = new ArrayList<String>();
+	//private int price = 0;//套餐價格
+	public FoodSet(){
+		
+	}
+	public FoodSet(String serial, String name,Food _mainFood, Food _subFood) {
+		this.setSerial(serial);
+		this.setName(name);
+		this.setMainFood(_mainFood);
+		this.setSubFood(_subFood);
+//		this.setPrice(mainFood.getPrice()+subFood.getPrice());
+
+	}
+
+	public int getPrice(){
+		return mainFood.getPrice()+subFood.getPrice();
+	}
+	public Food getMainFood() {
+		return mainFood;
+	}
+	public void setMainFood(Food mainFood) {
+		this.mainFood = mainFood;
+	}
+	public Food getSubFood() {
+		return subFood;
+	}
+	public void setSubFood(Food subFood) {
+		this.subFood = subFood;
+	}
+	//更改套餐內的附餐內容
+	public void EditSubFood(Food subfood){
+		setSubFood(subfood);
+	}
+	public ArrayList<String> getSetDetail() {
+		return setDetail;
+	}
+	public void setSetDetail(ArrayList<String> setDetail) {
+		this.setDetail = setDetail;
+	}
+
+}

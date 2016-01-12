@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F0FFF0" >
+
+    <LinearLayout
+        android:id="@+id/layoutADCE1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true" >
+
+        <Button
+            android:id="@+id/btnADCEHome"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="1dp"
+            android:layout_weight="2"
+            android:background="@drawable/button_red"
+            android:minHeight="35dp"
+            android:text="返回"
+            android:textColor="#ffffff" />
+
+        <TextView
+            android:id="@+id/lblADCEOrder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:minHeight="35dp"
+            android:text="選擇餐點"
+            android:textColor="#FA0300"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnADCECheckOut"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="1dp"
+            android:layout_weight="2"
+            android:background="@drawable/button_red"
+            android:minHeight="35dp"
+            android:text="→"
+            android:textColor="#ffffff" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutADCE2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/layoutADCE1" >
+
+        <Button
+            android:id="@+id/btnADCEPackage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="0.2dp"
+            android:layout_marginTop="0.4dp"
+            android:layout_weight="1"
+            android:background="@drawable/button_blue"
+            android:minHeight="35dp"
+            android:text="套餐"
+            android:textColor="#ffffff" />
+
+        <Button
+            android:id="@+id/btnADCESingle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="0.2dp"
+            android:layout_marginTop="0.4dp"
+            android:layout_weight="1"
+            android:background="@drawable/button_blue"
+            android:minHeight="35dp"
+            android:text="單點"
+            android:textColor="#ffffff" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutADCE3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/lblADCETotal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="總計："
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/btnADCECart"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/button_blue"
+            android:minHeight="32sp"
+            android:text="查看餐車"
+            android:textColor="#ffffff" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/lblADCEFoodName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/layoutADCE2"
+        android:layout_marginTop="15sp"
+        android:layout_centerHorizontal="true"
+        android:textSize="20sp" 
+        android:gravity="center"
+        />
+       <Button
+        android:id="@+id/btnADCEAddToCart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/layoutADCE3"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="15dp"
+        android:background="@drawable/button_red"
+        android:minHeight="30sp"
+        android:minWidth="120sp"
+        android:text="加入餐車"
+        android:textColor="#FFFFFF" />
+
+    <TextView
+        android:id="@+id/lblADCEQuantity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/btnADCEAddToCart"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        android:text="數量： 0"
+        android:textSize="20sp"
+        android:textStyle="bold" /> 
+    <LinearLayout
+        android:id="@+id/layoutADCE4"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+
+        android:layout_below="@id/lblADCEFoodName"
+        android:layout_marginTop="8sp"
+        android:layout_above="@id/lblADCEQuantity"
+        android:orientation="vertical" >
+
+        <tw.com.gear.prjmarcorder.MyGallery
+            android:id="@+id/galleryADCEG1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+
+
+ 
+
+
+
+    <Button
+        android:id="@+id/btnADCESub"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/btnADCEAddToCart"
+        android:layout_marginBottom="15dp"
+        android:layout_marginRight="30dp"
+        android:layout_toLeftOf="@id/lblADCEQuantity"
+        android:minHeight="20dp"
+        android:minWidth="20dp"
+        android:text="─"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/btnADCEAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/btnADCEAddToCart"
+        android:layout_marginBottom="15dp"
+        android:layout_marginLeft="30dp"
+        android:layout_toRightOf="@id/lblADCEQuantity"
+        android:minHeight="20sp"
+        android:minWidth="20sp"
+        android:text="+"
+        android:textColor="#FFFFFF" />
+
+</RelativeLayout>

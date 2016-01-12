@@ -1,0 +1,468 @@
+package tw.com.gear.marcorder;
+
+import tw.com.gear.marcorder.R;
+import kankan.wheel.widget.OnWheelChangedListener;
+import kankan.wheel.widget.OnWheelChangedListener2;
+import kankan.wheel.widget.OnWheelScrollListener;
+import kankan.wheel.widget.WheelView;
+import kankan.wheel.widget.adapters.AbstractWheelTextAdapter;
+import kankan.wheel.widget.adapters.ArrayWheelAdapter;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.Display;
+import android.view.Gravity;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+public class CitiesActivity extends Activity {
+	// Scrolling flag
+	private boolean scrollingCity = false;
+	private boolean scrollingDistrict = false;
+	private boolean scrollingRoad = false;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);// 設定此頁沒有標頭
+		setContentView(R.layout.cities_layout);
+
+		InitialComponent();// 初始化
+	}
+
+	// 更改回車鍵事件，讓使用者有安全感
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			doYouWantToLeave();// 詢問使用者是否確定離開
+		}
+		return super.onKeyDown(keyCode, event);
+	}
+
+	// 詢問使用者是否要離開的方法
+	private void doYouWantToLeave() {
+		// Dialog dialog = new AlertDialog.Builder(CitiesActivity.this)
+		// .setIcon(R.drawable.questionmark1).setTitle("地址確定沒錯嗎？")
+		// .setMessage("您選的地址為：\n\n※請務必確認您的地址無誤，方便我們外送員將香噴噴美味的食物送至您的手中^^")
+		// .setPositiveButton("確定", new DialogInterface.OnClickListener() {
+		// public void onClick(DialogInterface dialog, int which) {
+
+		// 下面沒有甚麼特別的意思，純粹更新資料罷了，天阿，打這個註解打到都累了，不過就是更新資料，你為啥還要看助解？
+		String strLocation = "";
+		for (int i = 0; i < ActOrder.aryLocation.length; i++)
+			strLocation += ActOrder.aryLocation[i];
+		ActOrder.btnStore.setTag(strLocation);
+		ActOrder.btnStore.setText(strLocation);
+		ActOrder.btnStore.setTextColor(0xFF000000);
+		Intent intent = new Intent(CitiesActivity.this,
+				CitiesLittleActivity.class);
+		startActivity(intent);
+		finish();
+
+		// 添加介面切換效果，注意只有Android的2.0(SdkVersion版本號為5)以後的版本才支援
+		int version = Integer.valueOf(android.os.Build.VERSION.SDK_INT);
+		if (version >= 5) {
+			overridePendingTransition(R.anim.zoominfromtop,
+					R.anim.zoomoutfrombottom2);
+		}
+		// }
+		// }).setNegativeButton("取消", null).show();
+	}
+
+	/**
+	 * 連接"市"及其圖片，但詳情我還沒看，看起來是將一個能同時放字與圖片的wheel設定他的圖片和字~
+	 */
+	private class CityAdapter extends AbstractWheelTextAdapter {
+		// Countries names
+		private String countries[] = new String[] { "很抱歉", "外送的", "功能目", "前沒有",
+				"開放喔" };
+		// Countries flags
+		private int flags[] = new int[] { R.drawable.parper2, R.drawable.padd,
+				R.drawable.search2, R.drawable.questionmark1, R.drawable.cart3 };
+
+		/**
+		 * 建構子，我不知道他幹嘛用的，不過看起來是建構一個字定義能同時放字與圖片的wheel
+		 */
+		protected CityAdapter(Context context) {
+			super(context, R.layout.country_layout, NO_RESOURCE);
+
+			setItemTextResource(R.id.country_name);
+		}
+
+		// 痾...我想..這應該是把圖片配給相對應的wheel.index吧
+		@Override
+		public View getItem(int index, View cachedView, ViewGroup parent) {
+			View view = super.getItem(index, cachedView, parent);
+			ImageView img = (ImageView) view.findViewById(R.id.flag);
+			img.setImageResource(flags[index]);
+			return view;
+		}
+
+		// 取第一個wheel的長度，甚麼？你問我為什麼還是countries而不是city，因為我沒改，這種問題以後不要再問了。
+		@Override
+		public int getItemsCount() {
+			return countries.length;
+		}
+
+		// 這相信是把字放入對應的index而已...吧
+		@Override
+		protected CharSequence getItemText(int index) {
+			return countries[index];
+		}
+	}
+
+	/**
+	 * 更新"區"的wheel，第一個參數放區的wheelView，第二個參數放區的字串陣列，第三個則是目前的City選到的Index.
+	 */
+	private void updateDistrict(WheelView District, String strDistrict[][],
+			int index) {
+		// 更新"區"之前，要先判斷是不是第一次開啟，但這個第一次開啟已經不只判斷是不是第一次開啟了，甚至應該說，判斷有沒有開始滑動 接下面註解↓
+		if (!ActOrder.isFistTimeToOpen) {
+			// 接上面註解↑
+			// 第二次開啟的話要帶入資料，很多資料不能洗空，所以這次是第二次帶入資料要跑的方法，避免把ActOrder的資料洗掉，導致讀取不到上一次選擇的"區"、"路"
+			systemUpdateDistrict(District, strDistrict, index);
+		}
+		// 第一次或是開始滑動情況，每次city有更新，那區和路就應該更新至最頂端的那個，所以要加入下面兩行再執行原本那個方法
+		// 這樣才能把"區"、"路"更新
+		else {
+			ActOrder.intLocation[1] = 0;
+			ActOrder.intLocation[2] = 0;
+			// 因為我取資料是從intLocation裡面的index來判斷的，所以如果有滑動或是第一次，就要將ActOrder的intLocation更新！
+			// 但如果是已經填寫過地址，第二次開啟，就不能跑這個，要跑上面那個if，因為資料不能被更新，必須是原本紀錄過的資料
+			systemUpdateDistrict(District, strDistrict, index);
+		}
+	}
+
+	// 這就是上面說的那個方法，系統自行更新"區"
+	private void systemUpdateDistrict(WheelView District,
+			String[][] strDistrict, int index) {
+		try {
+			// 將最新的wheel更新...吧
+			ArrayWheelAdapter<String> adapter = new ArrayWheelAdapter<String>(
+					this, strDistrict[index]);
+			adapter.setTextSize(20);// What the Fuck!?
+			District.setViewAdapter(adapter);// What is it!?
+			District.setCurrentItem(0);// 將更新後的district的wheel位置移到第"0"個
+
+			// 讓我記錄city選到的index，這個可以方便地址選完後，再度開啟地址的時候可以直接帶入上一次選的地址內容
+			ActOrder.intLocation[0] = index;
+
+			// 這邊因為沒有更新，直接帶入原本記錄中的地址內容，如果是第一次則會帶預設的0，所以和更新是一樣的意思
+			// 但如果是滑動更新怎麼辦?所以上面那個方法才會有ifelse判斷，你在去看一次就懂了
+			ActOrder.aryLocation[0] = cityAdapter.countries[ActOrder.intLocation[0]];
+			// 同上
+			ActOrder.aryLocation[1] = strDistrict[ActOrder.intLocation[0]][ActOrder.intLocation[1]];
+
+			// 更新"路"的方法。
+			// 甚麼？為什麼要在這邊更新路？因為你更新了"區"，"路"當然也要更新啊！總不能台北士林也有建華街這種情況發生吧！
+			updateRoad(road, strRoad, index, ActOrder.intLocation[1]);
+
+			// 下面沒甚麼含意，純粹更新資料用的，看一下你就懂了
+			// 甚麼？你又問我為什麼要一直重複更新，為什麼不直接寫一個更新方法叫用他？
+			// 你在往下看就會看到我有寫，但因為這個更新跟那個更新有些許不同，這個我沒有要更新那麼多，所以不叫用他。
+			String strLocation = "";
+			for (int i = 0; i < ActOrder.aryLocation.length; i++)
+				strLocation += ActOrder.aryLocation[i];
+			ActOrder.btnStore.setTag(strLocation);
+			txtLocation.setText(strLocation);
+			// MyToast.Show(CitiesActivity.this, ActOrder.aryLocation[0]
+			// + ActOrder.aryLocation[1]+ActOrder.aryLocation[2]);
+		} catch (Exception e) {
+			// 又要問怎麼會在這邊try catch嗎
+			// 因為如果你地址選到index5但是突然又滑city到index只有4以內的城市，就會產生錯誤
+			// 所以如果有錯誤就強制他index到0，然後重新執行更新，就不會有錯誤了
+			ActOrder.intLocation[1] = 0;
+			// ActOrder.intLocation[2] = 0;
+			updateDistrict(District, strDistrict, index);
+		}
+	}
+
+	/**
+	 * 更新"路"的wheel，第一個參數請放路的wheelView，第二個參數放路的字串陣列，
+	 * 第三個和第四個參數分別放目前city和district選到的index
+	 */
+	// 更新"路"，跟"區"的更新大同小異，參考"區"的更新，會幫助你了解，同樣東西我就不打了。
+	private void updateRoad(WheelView road, String strRoad[][][], int index,
+			int index2) {
+		if (!ActOrder.isFistTimeToOpen) {
+			systemUpdateRoad(road, strRoad, index, index2);
+		} else {
+			ActOrder.intLocation[2] = 0;
+			systemUpdateRoad(road, strRoad, index, index2);
+		}
+	}
+
+	// 同上，只是這是更新"路"
+	private void systemUpdateRoad(WheelView road, String[][][] strRoad,
+			int index, int index2) {
+		try {
+			ArrayWheelAdapter<String> adapter = new ArrayWheelAdapter<String>(
+					this, strRoad[index][index2]);
+			adapter.setTextSize(20);
+			road.setViewAdapter(adapter);
+			road.setCurrentItem(0);
+			ActOrder.intLocation[0] = index;
+			ActOrder.intLocation[1] = index2;
+			ActOrder.aryLocation[1] = strDistrict[ActOrder.intLocation[0]][ActOrder.intLocation[1]];
+			ActOrder.aryLocation[2] = strRoad[ActOrder.intLocation[0]][ActOrder.intLocation[1]][ActOrder.intLocation[2]];
+			String strLocation = "";
+			for (int i = 0; i < ActOrder.aryLocation.length; i++)
+				strLocation += ActOrder.aryLocation[i];
+			ActOrder.btnStore.setTag(strLocation);
+			txtLocation.setText(strLocation);
+			// MyToast.Show(CitiesActivity.this, ActOrder.aryLocation[0]
+			// + ActOrder.aryLocation[1] + ActOrder.aryLocation[2]);
+			// upDateEveryThing(road,strRoad,city.getCurrentItem(),
+			// district.getCurrentItem(),road.getCurrentItem());
+		} catch (Exception e) {
+			ActOrder.intLocation[2] = 0;
+			updateRoad(road, strRoad, index, index2);
+		}
+	}
+
+	/** 更新所有的東西，讓所有東西歸到最新 */
+	// 隨時都要讓資料保持在最新狀態，當你覺得哪邊已經要更新地址資料了，就叫用這個方法吧！
+	private void updateEveryThing(WheelView road, String strRoad[][][],
+			int index, int index2, int index3) {
+		try {
+			ActOrder.intLocation[0] = index;
+			ActOrder.intLocation[1] = index2;
+			ActOrder.intLocation[2] = index3;
+			ActOrder.aryLocation[1] = strDistrict[ActOrder.intLocation[0]][ActOrder.intLocation[1]];
+			ActOrder.aryLocation[2] = strRoad[ActOrder.intLocation[0]][ActOrder.intLocation[1]][ActOrder.intLocation[2]];
+			String strLocation = "";
+			for (int i = 0; i < ActOrder.aryLocation.length; i++)
+				strLocation += ActOrder.aryLocation[i];
+			ActOrder.btnStore.setTag(strLocation);
+			txtLocation.setText(strLocation);
+			// MyToast.Show(CitiesActivity.this, ActOrder.aryLocation[0]
+			// + ActOrder.aryLocation[1] + ActOrder.aryLocation[2]);
+		} catch (Exception e) {
+			ActOrder.intLocation[2] = 0;
+			updateEveryThing(road, strRoad, index, index2, index3);
+		}
+	}
+
+	// 初始化
+	private void InitialComponent() {
+		// 以下為自設物件初始化
+		btnSure = (Button) findViewById(R.id.btnWrite);
+		btnSure.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				doYouWantToLeave();// 你想要離開嗎?讓使用者有安全感
+			}
+		});
+
+		txtLocation = (TextView) findViewById(R.id.txtLocation);
+
+		// 以下為設置此Activity的大小用的
+		WindowManager m = (WindowManager) this
+				.getSystemService(Context.WINDOW_SERVICE);
+		Display d = m.getDefaultDisplay(); // 獲得目前的螢幕寬、高
+		LayoutParams p = getWindow().getAttributes(); // 獲得對話框目前的參數值，以便下面開始設置其眾多參數，例如寬高
+		p.height = (int) (d.getHeight() * 0.3); // 設定高度
+		// p.width = (int) (d.getWidth() * 0.8); // 設定寬度
+		p.alpha = 1.0f; // 設定透明度
+		p.dimAmount = 1.0f; // 設定黑暗度，等等...這三小?
+		getWindow().setAttributes(p); // 將這個屬性回傳給目前視窗
+		getWindow().setGravity(Gravity.BOTTOM); // 設定目前視窗的位置
+
+		// *********************以下為wheel眾多設定*********************//
+
+		city = (WheelView) findViewById(R.id.wheelCity);
+		city.setVisibleItems(5);// 可以同時顯示幾個...吧
+		cityAdapter = new CityAdapter(this);
+		city.setViewAdapter(cityAdapter);
+
+		road = (WheelView) findViewById(R.id.wheelRoad);
+
+		district = (WheelView) findViewById(R.id.wheelDistrict);
+		district.setVisibleItems(5);// 可以同時顯示幾個...吧
+
+		// city改變的時候更新"區"的方法，但..(往下看)
+		// 下面這是強大的wheel團隊自己寫的listener，真的太猛了！
+		// 但要注意的是，這個只會執行一次！(What the fuck!?)
+		// 對！我也覺得很神奇，所以之後的所有改變、更新都是執行scrolling裡面的那些方法，自己注意一下
+		// 有想要每次更新就執行的動作不要寫在這邊，不然只會執行一次，要寫在scrolling的裡面，所以我索性把她寫進update了
+		city.addChangingListener(new OnWheelChangedListener() {
+			@Override
+			public void onChanged(WheelView wheel, int oldValue, int newValue) {
+				if (!scrollingCity) {
+					// if (!ActOrder.isFistTimeToOpen) {
+					// 然後就更新"區"
+					updateDistrict(district, strDistrict,
+							ActOrder.intLocation[0]);
+					// } else {
+					// userUpdateDistrict(district, strDistrict,
+					// ActOrder.intLocation[0]);
+					// }
+				}
+			}
+
+		});
+
+		// 解說同上，只是變成"路"的更新，我就不贅述了
+		district.addChangingListener2(new OnWheelChangedListener2() {
+			public void onChanged(WheelView wheel, int oldValue, int newValue,
+					int newValue2) {
+				if (!scrollingDistrict) {
+					// if (!ActOrder.isFistTimeToOpen) {
+					updateRoad(road, strRoad, ActOrder.intLocation[1],
+							ActOrder.intLocation[2]);
+					// }else{
+					// userUpdateRoad(road, strRoad, ActOrder.intLocation[1],
+					// ActOrder.intLocation[2]);
+					// }
+				}
+			}
+		});
+
+		// 下面這些就是wheel的scrolling的事件，每次滑動後會執行的事件，有分為滑動中和滑動後
+		// city滑動的事件
+		city.addScrollingListener(new OnWheelScrollListener() {
+			@Override
+			// 滑動中
+			public void onScrollingStarted(WheelView wheel) {
+				scrollingCity = true;// 最上面設的滑動布林設為true表示正在滑動，有其他方法會判斷到
+
+				district.stopScrolling();// 他如果再滑動就停止其他wheel的話動，雖然我覺得這兩行好像沒三小路用
+				road.stopScrolling();// 同上
+			}
+
+			@Override
+			// 滑動後
+			public void onScrollingFinished(WheelView wheel) {
+				scrollingCity = false;// 就將滑動布林設為false，表示沒在滑動，其他方法會用到這個來判斷
+				updateDistrict(district, strDistrict, city.getCurrentItem());// 滑動完city就執行更新district方法
+			}
+		});
+
+		// district的滑動事件，解說和city的滑動一樣，看上面就懂了
+		district.addScrollingListener(new OnWheelScrollListener() {
+			@Override
+			public void onScrollingStarted(WheelView wheel) {
+				scrollingDistrict = true;
+				city.stopScrolling();
+				road.stopScrolling();
+			}
+
+			@Override
+			public void onScrollingFinished(WheelView wheel) {
+				scrollingDistrict = false;
+				updateRoad(road, strRoad, city.getCurrentItem(),
+						district.getCurrentItem());
+			}
+		});
+
+		// road的滑動事件，解說和city的滑動一樣，看上面就懂了
+		road.addScrollingListener(new OnWheelScrollListener() {
+			@Override
+			public void onScrollingStarted(WheelView wheel) {
+				scrollingRoad = true;
+				city.stopScrolling();
+				district.stopScrolling();
+			}
+
+			@Override
+			public void onScrollingFinished(WheelView wheel) {
+				scrollingRoad = false;
+				updateEveryThing(road, strRoad, city.getCurrentItem(),
+						district.getCurrentItem(), road.getCurrentItem());
+			}
+		});
+
+		// 判斷是不是第一次打開地址選擇，如果是就直接執行原始的更新方法，不過我後來看看我在方法那邊有判斷過了，這邊好像沒有意義XD
+		if (ActOrder.isFistTimeToOpen) {
+			updateDistrict(district, strDistrict, ActOrder.intLocation[0]);
+			// 下面為什麼要這樣?因為他要index有改變才會觸發Change然後才會觸發update，所以只好如此！
+			// city.setCurrentItem(1);// 先改變從0→1
+			// city.setCurrentItem(0);// 讓區的更新能跑出來，再改變自己的index變回0
+			// district.setCurrentItem(1);// 同上
+			// district.setCurrentItem(0);// 路的更新出現
+			// road.setCurrentItem(1);// 同上
+			// road.setCurrentItem(0);// 同上
+		}
+		// 如果不是第一次打開那就要將原本的資料帶入，但是為了避免資料產生許多矛盾問題
+		// 例如資料帶入只有第一個wheel正確，後面卻都變成index=0的狀況發生，或是反過來，滑動後，後面都不跳到index = 0的狀況
+		// 所以兩種狀況都要切割開來判斷並執行不同的方法
+		// 但只有帶入資料的時候這樣
+		// 滑動之後就又回歸正常，只要有滑動，就應該將後面那一項的index更新為0，所以在最後我又加上了
+		// 這欄ActOrder.isFistTimeToOpen = true;讓他都以第一次的狀態來滑動，這樣就省了不少程式碼了
+		else {
+			// 下面這邊是要讓wheel上面的字體險是正確用的，懶得自己再寫一次，所以我用變更index的方法讓他自己更新XD
+			city.setCurrentItem(1);
+			city.setCurrentItem(ActOrder.intLocation[0]);
+			district.setCurrentItem(1);
+			district.setCurrentItem(ActOrder.intLocation[1]);
+			road.setCurrentItem(1);
+			road.setCurrentItem(ActOrder.intLocation[2]);
+			// 更新完當然要更新所有資料的最新程度囉，不過這邊我相信只是要更新標頭而已XD，但我懶的寫，所以執行全部更新的方法
+			updateEveryThing(road, strRoad, ActOrder.intLocation[0],
+					ActOrder.intLocation[1], ActOrder.intLocation[2]);
+			// 這就是上面說的讓之後都以第一次的狀態下去做，除了這次帶入上次的資料外，所以資料帶入完
+			// 就要再將ActOrder.isFistTimeToOpen = true;
+			// 這樣後面整個地址運作的判斷，就不會有錯誤的index事件發生
+			ActOrder.isFistTimeToOpen = true;
+		}
+	}
+
+	// 變數宣告
+	Button btnSure;
+	TextView txtLocation;
+	String[] aryLocation = new String[9];
+	CityAdapter cityAdapter;
+	WheelView road, district, city;
+	final String strDistrict[][] = new String[][] {
+			new String[] { "外送尚未開放", "外送尚未開放", "外送尚未開放", "外送尚未開放", "外送尚未開放" },
+			new String[] { "外送尚未開放", "外送尚未開放", "外送尚未開放", "外送尚未開放", "外送尚未開放" },
+			new String[] { "外送尚未開放", "外送尚未開放", "外送尚未開放", "外送尚未開放" },
+			new String[] { "外送尚未開放", "外送尚未開放" }, new String[] { "外送尚未開放", "外送尚未開放" } };
+	final String strRoad[][][] = new String[][][] {
+			new String[][] { { "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢" },
+					{ "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢" },
+					{ "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢" },
+					{ "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢" },
+					{ "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢" } },
+			new String[][] { {"外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢"  },
+					{ "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢"  },
+					{"外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢"  },
+					{"外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢" },
+					{ "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢"  } },
+			new String[][] { { "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢"  },
+					{ "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢"  },
+					{"外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢"  }, { "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢"  } },
+			new String[][] { { "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢"  },
+					{ "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢"  } },
+			new String[][] { { "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢"  },
+					{ "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢", "外送訂單作廢"  } } };
+//	final String strRoad[][][] = new String[][][] {
+//			new String[][] { { "建華街", "和平路", "凱旋路", "五甲二路", "中山四路" },
+//					{ "三多路", "四維路", "光華路", "二聖路", "民生路" },
+//					{ "中正四路", "大馬路", "小馬路", "黑路路", "瑪麗蓮夢路" },
+//					{ "光復路", "青年路", "大東路", "復興路", "五甲一路" },
+//					{ "小港路", "北港路", "南港路", "東港路", "大港路" } },
+//			new String[][] { { "臨溪路", "東吳路", "陽明路", "蓮華聖路", "明星花路" },
+//					{ "萬安路", "萬華路", "萬聖路", "天佛原路", "取經之路" },
+//					{ "天母路", "地母路", "天賦路", "帝王之路", "修羅之路" },
+//					{ "北投路", "南投路", "東投路", "溪頭路", "伸卡球路" },
+//					{ "天龍路", "不要臉路", "自以為是路", "眼睛不看路", "約翰走路" } },
+//			new String[][] { { "光復路", "成功路", "勝利路", "大學路", "長榮路" },
+//					{ "好吃的果汁店", "好吃的21世紀", "好吃的麵店", "好吃的蒸蛋飯", "美好的一切" },
+//					{ "總圖", "中正堂", "朱銘" }, { "進一球館", "電機系館", "韓儒家" } },
+//			new String[][] { { "不過我知道", "台中太陽餅", "很紅", "但比不上", "屏東的蛋糕" },
+//					{ "因為", "屏東的蛋糕", "他需要", "排隊", "等三個月" } },
+//			new String[][] { { "不過我知道", "台東的風景", "很棒", "但比不上", "高雄的美女" },
+//					{ "高雄的美女", "她們是", "全台", "之最" } } };
+}

@@ -1,0 +1,45 @@
+package tw.com.gear.marcorder;
+
+import java.util.ArrayList;
+
+//訂單類別，當購物車類別被送往伺服器，伺服器會回傳訂單號碼，這筆購物車就會轉成訂單類別
+public class Orders extends Cart {
+
+	private String ordersSerial = "";//訂單編號
+	private String ordersState = "";
+	private boolean isSelected = false;
+	
+	public Orders(){
+		
+	}
+	public Orders(Cart cart) {
+		this.setCustomerAddress(cart.getCustomerAddress());
+		this.setCustomerName(cart.getCustomerName());
+		this.setCustomerPhone(cart.getCustomerPhone());
+		this.setIsMember(cart.getIsMember());
+		this.setOrderList(cart.getOrderList());
+		this.setOrderType(cart.getOrderType());
+		this.setOther(cart.getOther());
+		this.setTime(cart.getTime());
+	}
+
+	public String getOrdersSerial() {
+		return ordersSerial;
+	}
+
+	public void setOrdersSerial(String ordersSerial) {
+		this.ordersSerial = ordersSerial;
+	}
+	public boolean isSelected(){
+		return isSelected;
+	}
+	public void setSelected(boolean isSelected){
+		this.isSelected = isSelected;
+	}
+	public String getOrdersState() {
+		return ordersState;
+	}
+	public void setOrdersState(String ordersState) {
+		this.ordersState = ordersState;
+	}
+}

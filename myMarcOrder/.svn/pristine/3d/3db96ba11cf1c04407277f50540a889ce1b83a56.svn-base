@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="tw.com.gear.prjmarcorder"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="19" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/mark3"
+        android:label="@string/myApp_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name="tw.com.gear.prjmarcorder.ActMain"
+            android:label="@string/myApp_name"
+            android:screenOrientation="portrait" android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="tw.com.gear.prjmarcorder.ActOrder"
+            android:label="@string/title_activity_act_order"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="tw.com.gear.prjmarcorder.ActLogin"
+            android:label="@string/title_activity_act_login"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden" >
+        </activity>
+        <activity
+            android:name="tw.com.gear.prjmarcorder.ActReadyToOrder"
+            android:label="@string/title_activity_act_ready_to_order"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="tw.com.gear.prjmarcorder.ActPageOrderItemList"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="tw.com.gear.prjmarcorder.ActPageCart"
+            android:label="@string/title_activity_act_page_cart"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="tw.com.gear.prjmarcorder.ActOrdersConfirm"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity android:name="tw.com.gear.prjmarcorder.ActMyDatePicker" >
+        </activity>
+        <activity
+            android:name="tw.com.gear.prjmarcorder.ActOrderItemToEdit"
+            android:label="@string/title_activity_act_order_item_to_edit"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="tw.com.gear.prjmarcorder.ActOrderItemSetToEdit"
+            android:label="@string/title_activity_act_order_item_set_to_edit"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="tw.com.gear.prjmarcorder.CitiesActivity"
+            android:label="Cities"
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="kankan.wheel.extended.WHEEL_SAMPLE" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="tw.com.gear.prjmarcorder.ActSerchOrders"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="tw.com.gear.prjmarcorder.ActOrderFinish"
+            android:label="@string/title_activity_act_order_finish"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="tw.com.gear.prjmarcorder.CitiesLittleActivity"
+            android:label="@string/title_activity_cities_little"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="tw.com.gear.prjmarcorder.ActFans"
+            android:label="@string/title_activity_act_fans"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity android:name="tw.com.gear.prjmarcorder.ActSignUp"
+            android:screenOrientation="portrait"  >
+        </activity>
+        <activity
+            android:name="tw.com.gear.prjmarcorder.ActDreamCart"
+            android:label="@string/title_activity_act_dream_cart"
+            android:screenOrientation="portrait"  >
+        </activity>
+        <activity
+            android:name="tw.com.gear.prjmarcorder.ActDreamCartEdit"
+            android:label="@string/title_activity_act_dream_cart_edit"
+            android:screenOrientation="portrait"  >
+        </activity>
+        <activity
+            android:name="tw.com.gear.prjmarcorder.ActDreamCartFinish"
+            android:label="@string/title_activity_act_dream_cart_finish"
+            android:screenOrientation="portrait"  >
+        </activity>
+        <activity
+            android:name="tw.com.gear.prjmarcorder.ActForgetPwd"
+            android:label="@string/title_activity_act_forget_pwd"
+            android:screenOrientation="portrait"  >
+        </activity>
+        <service android:name="OrderAlermService"></service>
+        <receiver android:name="BootToActService" android:permission="android.permission.RECEIVE_BOOT_COMPLETED" android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>   
+        </receiver>
+    </application>
+
+</manifest>

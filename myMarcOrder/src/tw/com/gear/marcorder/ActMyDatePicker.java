@@ -1,0 +1,351 @@
+package tw.com.gear.marcorder;
+
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
+import tw.com.gear.marcorder.R;
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.DatePickerDialog;
+import android.app.DatePickerDialog.OnDateSetListener;
+import android.app.Dialog;
+import android.app.TimePickerDialog;
+import android.app.TimePickerDialog.OnTimeSetListener;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.net.wifi.p2p.WifiP2pManager.ActionListener;
+import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.TimePicker;
+import android.widget.DatePicker.OnDateChangedListener;
+import android.widget.TimePicker.OnTimeChangedListener;
+
+@SuppressLint("Instantiatable")
+public class ActMyDatePicker extends TimePickerDialog implements
+		OnClickListener {
+	@SuppressLint("Instantiatable")
+	public ActMyDatePicker(Context context, OnTimeSetListener callBack,
+			int hourOfDay, int minute, boolean is24HourView,
+			Button ActOrder的TimeButton, int isThisTomorrow) {
+		super(context, callBack, hourOfDay, minute, is24HourView);
+		this.btn = ActOrder的TimeButton;// 將btn設定為傳入的按鈕，以便我們對那個按鈕作控管
+		this.hour = hourOfDay;// 將傳入的小時記錄下來，有多種用途，最重要的是解決如果小於10，該數字會只有一位數的問題，這個問題會造成判斷錯誤
+		this.minute = minute;// 同上
+		toDayIs = isThisTomorrow;// 將今天或明天的參數記錄下來，以便執行不同的邏輯判斷
+		IsThisTimeLessThanTen(hourOfDay, minute);// 判斷是否小於0的方法，將兩個時間分別帶入參數
+	}
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.act_my_date_picker);
+		Initial();// 初始化方法
+	}
+
+	// 初始化
+	private void Initial() {
+		// 設定連結
+		txtDate = (TextView) findViewById(R.id.txtDate);
+		txtTime = (TextView) findViewById(R.id.txtTime);
+		btnSubmitTime = (Button) findViewById(R.id.btnDate);
+		btnSubmitTime.setOnClickListener(this);
+		btnDate1 = (Button) findViewById(R.id.btnDate1);
+		btnDate1.setOnClickListener(this);
+		btnDate2 = (Button) findViewById(R.id.btnDate2);
+		btnDate2.setOnClickListener(this);
+		btnDate3 = (Button) findViewById(R.id.btnDate3);
+		btnDate3.setOnClickListener(this);
+		timePicker = (TimePicker) findViewById(R.id.myTimePicker);
+
+		// 設定timepicker的初始時間位置
+		timePicker.setCurrentHour(hour);
+		timePicker.setCurrentMinute(minute);
+
+		// 設定三個按鈕上的日期方法，前面帶的是calendar，後面帶的是這個日期要加幾天，如果是0就是從今天算起後三天，如果是1就是從明天算起後三天
+		setBtnTime(calendar, 0);
+
+		// **************************************************************
+		// *******************　　以下為眾邏輯判斷　　*************************
+		// **************************************************************
+
+		// 判斷如果是第一次選時間的話，設定按鈕初始時間及顏色
+		if (btn.getText().toString().equals("選取時間")) {
+			// btn.setText(strHour + ":" + strMinute);
+			// btn.setTextColor(0xFF000000);
+			btnDate1.setBackgroundColor(0xFF55A8FF);// 按鈕的背景顏色改變方式，注意顏色代碼都是用0xFF開頭，不要問我為什麼！
+			btnDate1.setTag(true);// 設定日期1的按鈕Tag為true，tag是用來判斷剛剛按下的是哪顆按鈕用的，第一次開啟所以欲設第一個日期按鈕為true
+			// 判斷如果現在時間超過十二點，那麼所有日期按鈕加一天，今天的日期已經選不到了
+			if (hour >= 12) {
+				setBtnTime(calendar, 1);// 參數帶一，讓所有日期加一天
+				toDayIs = TOMORROW;// 如同剛剛所說，日期都是明天起跳了，所以現在的狀態為TOMORROW
+			} else {
+				setBtnTime(calendar, 0);
+				toDayIs = TODAY;// 若不是則為今天
+			}
+			this.btn.setTag(btnDate1.getText().toString());// 設定上一頁的按鈕改變他的text為時間
+			this.btn.setTextColor(0xFF000000);// 改變它的顏色為黑色，避免送出表單因為字體是紅色而出錯
+		}
+
+		// 如果不是第一次開啟的判斷
+		else {
+			// 判斷現在的狀態是今天還是明天
+			if (toDayIs == TODAY) {
+				if (hour >= 12) {// 如果是今天，但時間已經超過營業時間，那麼就將狀態改成明天
+					setBtnTime(calendar, 1);
+					toDayIs = TOMORROW;
+				}
+				// else {
+				// toDayIs = TODAY;
+				// }
+			} else {
+				setBtnTime(calendar, 1);// 本來就不是今天的話，就將三個按鈕日期直接設定明天
+			}
+		}
+
+		// 判斷上一頁的btn按鈕的tag裡面放的是哪一個日期，以便用這個日期來判斷上一次按下的是哪個按鈕，讓這個按鈕這次的預設狀態是按下的狀態
+		if (!btn.getTag().toString().equals("")
+				|| btn.getTag().toString().equals(null)) {
+			Button[] btnDate = new Button[] { btnDate1, btnDate2, btnDate3 };
+			for (Button b : btnDate) {
+				b.setTag(false);
+				b.setBackgroundColor(0xFFCDE5FF);//這行很重要！一定要有！不然不同手機會產生全然不同的結果！
+				if (b.getText().toString().equals(btn.getTag().toString())) {
+					b.setTag(true);
+					b.setBackgroundColor(0xFF55A8FF);// 這個顏色代表使用者現在按下這個按鈕
+					// txtDate.setText("目前選擇時間："
+					// + String.valueOf(calendar.get(Calendar.YEAR)) + "-"
+					// + b.getText().toString());
+					setTxtDateText(b,toDayIs);//更新時間那欄的時間，第一個參數傳現在按下的按鈕，第二個現在是今天還明天的狀態
+				}
+			}
+		}
+
+		// 執行判斷時間是否超過的方法，兩個參數分別帶入現在已經選取的小時和分鐘，用來避免timePicker選到過期日期的問題
+		isThisTimeOver(hour, minute);
+
+		// 設定最上方的"目前已經選擇的時間"
+
+		txtTime.setText(strHour + ":" + strMinute);
+
+		setActOrderCartTime();
+
+		// 當timePicker時間改變時的事件，也就是使用者開始滑動時間的時候會發生的事件
+		timePicker.setOnTimeChangedListener(new OnTimeChangedListener() {
+			public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
+				// isThisTimeOver(hourOfDay, minute);
+				hour = timePicker.getCurrentHour();// 將現在選擇的小時設定為預設值，以便使用者打開便是上次選擇的日期
+				ActMyDatePicker.this.minute = timePicker.getCurrentMinute();// 同上
+				// IsThisTimeLessThanTen(hourOfDay, minute);
+
+				isThisTimeOver(hourOfDay, minute);// 當然還要判斷一次現在時間有沒有超過，這個方法裡面有判斷讓使用者不能選擇過期時間的邏輯
+
+				txtTime.setText(strHour + ":" + strMinute);// 將上方的時間設定上去，方便使用者觀看目前他選到的時間為幾月幾日幾時幾分
+				btn.setText(strHour + ":" + strMinute);// 也要記得更新上一頁按鈕要顯示的時間
+				btn.setTextColor(0xFF000000);// 還有顏色
+				setActOrderCartTime();
+			}
+
+		});
+	}
+
+	// 設定三個日期按鈕上的日期的方法
+	/**更新按鈕日期，傳入參數分別為你要的calendar,日期要從加幾天算起如果是今天算起，那i=0，明天i=1，依此類推*/
+	private Calendar setBtnTime(Calendar calendar, int i) {
+		calendar = Calendar.getInstance();
+		calendar.add(Calendar.DATE, +i);// 由傳入的參數來判斷現在到底要從哪一天算起
+		SimpleDateFormat format = new SimpleDateFormat("MM-dd");// 設定時間的格式
+		btnDate1.setText(format.format(calendar.getTime()));
+		calendar.add(Calendar.DATE, +1);// 算起的那天再加一天的日期
+		btnDate2.setText(format.format(calendar.getTime()));
+		calendar.add(Calendar.DATE, +1);// 算起的那天再加一天的日期的再加一天的日期
+		btnDate3.setText(format.format(calendar.getTime()));
+		return calendar;
+	}
+
+	// 判斷選取時間是否超過範圍
+	/**判斷時間有沒有選擇過期或者超過用的，只要放入小時和分鐘，裡面會自動幫你判斷現在的今天明天狀況為何，在依照不同的屬性下去做不同的判斷，相當強大的方法呦！*/
+	private void isThisTimeOver(int hourOfDay, int minute) {
+		IsThisTimeLessThanTen(hourOfDay, minute);// 先判斷傳入的小時和分鐘有沒有小於10，避免各種判斷的錯誤
+
+		// 以下很麻煩，分為兩種狀態，所以有兩大判斷
+
+		// 判斷現在的狀態是今天還是明天，影響判斷邏輯的不同
+		if (toDayIs == TODAY) {// 今天
+			// 判斷狀態是今天的情況下，按鈕選到的是哪一天，如果也是今天那麼就要考慮時間有沒有小於現在時間的問題
+			if (Boolean.parseBoolean(btnDate1.getTag().toString()) == true) {// btnDate1的tag如果是true，代表最後選到的按鈕是他
+				if (hourOfDay < 12 && hourOfDay >= 6) {// 先判斷日期如果是正常營業時間的情況
+					Calendar calendar2 = Calendar.getInstance();
+					calendar2.add(Calendar.MINUTE, +10);// 這個是要讓使用者最快只能十分鐘後取餐的時間設定
+					// 如果使用者目前選擇的"小時"小於現在真實的時間，就將timePicker的"小時"設成目前的小時，以防止選到過去的時間，但"分鐘"可自由選
+					if (hourOfDay < calendar2.get(Calendar.HOUR_OF_DAY)) {
+						// 輪圈設置成目前的小時
+						timePicker.setCurrentHour(calendar2
+								.get(Calendar.HOUR_OF_DAY));
+					}
+					// 如果目前選擇的"小時"與正常時間相等，那就要判斷"分鐘"的問題，一樣預防選到過去時間用的
+					else if (hourOfDay == calendar2.get(Calendar.HOUR_OF_DAY)) {
+						// "小時"相等的情況下，如果"分鐘"小於正常時間的話會發生的事
+						if (minute < calendar2.get(Calendar.MINUTE)) {
+							// timePicker.setCurrentHour(calendar2
+							// .get(Calendar.HOUR_OF_DAY));
+							// 將分鐘固定在目前分鐘的+10
+							timePicker.setCurrentMinute(calendar2
+									.get(Calendar.MINUTE));
+						}
+					}
+				}
+				// 判斷不是營業期間的情況
+				// 如果小於最早營業時間，那就固定輪圈為6
+				else if (hourOfDay < 6) {
+					timePicker.setCurrentHour(6);// 鎖輪圈為6
+					hour = 6;// 隱藏小時也改成6
+					txtTime.setText("06" + ":" + strMinute);// 時間標題也變6
+					btn.setText("06" + ":" + strMinute);// 上一頁按鈕也要變6
+				}
+				// 同上，改成大於最晚營業時間而已
+				else if (hourOfDay >= 12) {
+					timePicker.setCurrentHour(11);
+					hour = 11;
+					txtTime.setText("11" + ":" + strMinute);
+					btn.setText("11" + ":" + strMinute);
+				}
+			}
+			// 狀態是今天的情況下，按下的按鈕不是今天的情形，就要讓使用者能自由選擇最早營業時間到最晚營業時間，而不用再判斷是否小於現在時間，因為是明天後
+			else {
+				if (hourOfDay < 6) {
+					timePicker.setCurrentHour(6);
+					hour = 6;
+					txtTime.setText("06" + ":" + strMinute);
+					btn.setText("06" + ":" + strMinute);
+				} else if (hourOfDay >= 12) {
+					timePicker.setCurrentHour(11);
+					hour = 11;
+					txtTime.setText("11" + ":" + strMinute);
+					btn.setText("11" + ":" + strMinute);
+				}
+			}
+		}
+		// 如果狀態是明天的情況下，就甚麼都不用判斷，讓使用者能夠自由選擇營業時間內的時間
+		else {
+			if (hourOfDay < 6) {
+				timePicker.setCurrentHour(6);
+				hour = 6;
+				txtTime.setText("06" + ":" + strMinute);
+				btn.setText("06" + ":" + strMinute);
+			} else if (hourOfDay >= 12) {
+				timePicker.setCurrentHour(11);
+				hour = 11;
+				txtTime.setText("11" + ":" + strMinute);
+				btn.setText("11" + ":" + strMinute);
+			}
+		}
+	}
+
+	// 判斷時間是否小於10，避免字串判斷上出錯，也方便我們做很多時間大小的判斷
+	/**傳入參數分別為：小時，分鐘*/
+	private void IsThisTimeLessThanTen(int hourOfDay, int minute) {
+		if (hourOfDay < 10)
+			strHour = "0" + hourOfDay;
+		else
+			strHour = hourOfDay + "";
+		if (minute < 10)
+			strMinute = "0" + minute;
+		else
+			strMinute = minute + "";
+	}
+
+	// 本身click事件，可以用來設為這個dialog所有按鈕的事件，因為dialog只能靠實作這個方法來實現，不能new一個onClickLitener
+	@Override
+	public void onClick(View v) {
+		Button[] btnDate = new Button[] { btnDate1, btnDate2, btnDate3 };
+		Button btn = (Button) v;// 判斷按下的是哪個按鈕，這個你還看註解！太誇張了吧！
+		// IsThisTimeLessThanTen(hour, minute);
+
+		// 每按一次按鈕就要重新評估一下時間和判斷時間，其實沒必要用這個，但因為這個方法裡面有很多設定時間的程式碼，方便我如果是按下日期按鈕的時候...
+		// ...所有日期都能更新XD
+		isThisTimeOver(hour, minute);
+
+		// 首先如果按下按鈕的是"完成"按鈕的情形
+		if (btn.getText().toString().equals("完成")) {
+			setActOrderCartTime();
+//			MyToast.Show(ActOrder.a, ActOrder.date);//測試字串有無錯誤用的  之後可以砍掉
+			this.hide();// 然後隱藏這個對話框回到上一頁
+		}
+		// 如果按下的是時間按鈕的情形
+		else {
+			this.btn.setTag(btn.getText().toString());// 改變上一頁的按鈕Tag以便下次判斷我最後按下的是哪個時間按鈕
+			// 將所有時間按鈕顏色、Tag初始化，以便特別化這次按下的按鈕
+			for (Button b : btnDate) {
+				b.setTag(false);
+				b.setBackgroundColor(0xFFCDE5FF);
+			}
+			btn.setBackgroundColor(0xFF55A8FF);
+			btn.setTag(true);
+
+			// 又用這個方法，因為太好用了，很多更新懶的用都在裡面。(你問我為什麼不把所有更新分類後寫各自的新方法?因為趕專題進度沒時間 ˊ口ˋ)
+			isThisTimeOver(hour, minute);
+			//更新時間那欄的時間，第一個參數傳現在按下的按鈕，第二個現在是今天還明天的狀態
+			setTxtDateText(btn,toDayIs);
+			// IsThisTimeLessThanTen(hour, minute);
+
+		}
+		this.btn.setText(strHour + ":" + strMinute);// 最後不忘更新一下上一頁的按鈕上顯示的日期
+		setActOrderCartTime();// 更新目前最新時間
+	}
+
+	// 更新時間那欄的文字，三個判斷是為了避免有跨年跨月的問題，以防傳輸日期資料的時候傳輸錯誤資料，兩個大判斷是判斷現在狀態是今天還明天，會影響加上的日期。
+	/**傳入參數分別為現在按下的按鈕，今天明天的狀態*/
+	private void setTxtDateText(Button btn, int toDayOrTomorrow) {
+		Calendar c = Calendar.getInstance();
+		SimpleDateFormat format = new SimpleDateFormat("yyyy");// 設定時間的格式
+		if (toDayOrTomorrow == TODAY) {
+			setTxtDateCalendarAndTxtDateTime(btn, c, format,0);//
+		}else{
+			setTxtDateCalendarAndTxtDateTime(btn, c, format,1);
+		}
+	}
+
+	//更新時間那欄文字時間的calendar和她顯示的text的方法，因為使用兩次以上，所以又另外寫，以便修改。
+	/**傳入參數分別為，現在按下的按鈕，時間顯示格式，今天明天的狀態int*/
+	private void setTxtDateCalendarAndTxtDateTime(Button btn, Calendar c,
+			SimpleDateFormat format,int i) {
+		if (btn == btnDate1) {
+			c.add(Calendar.DATE, +i);
+			txtDate.setText("目前選擇時間：" + format.format(c.getTime()) + "-"
+					+ btn.getText().toString());
+		} else if (btn == btnDate2) {
+			c.add(Calendar.DATE, i+1);
+			txtDate.setText("目前選擇時間：" + format.format(c.getTime()) + "-"
+					+ btn.getText().toString());
+		} else {
+			c.add(Calendar.DATE, i+2);
+			txtDate.setText("目前選擇時間：" + format.format(c.getTime()) + "-"
+					+ btn.getText().toString());
+		}
+	}
+
+	// 更新目前最新時間的方法，這個是要傳入購物車時間欄位的資料。
+	/**更新目前最新時間，方便傳入購物車時間欄位資料*/
+	private void setActOrderCartTime() {
+		ActMain.myCart.setTime(txtDate.getText().toString().substring(7, 17)
+				+ " " + strHour +":"+ strMinute +":00");
+		ActOrder.date = txtDate.getText().toString().substring(7, 17) + " "
+				+ strHour +":"+ strMinute +":00";
+	}
+
+	// 全域變數宣告區
+	Button btnDate1, btnDate2, btnDate3, btn, btnSubmitTime;
+	TimePicker timePicker;
+	TextView txtDate, txtTime;
+	final int TODAY = 0, TOMORROW = 1;// 只是常數變數，免得上面的判斷不好閱讀
+	int hour, minute, toDayIs = TODAY;// toDayIs要特別講一下，這個是用來記錄現在的狀態是明天還是今天用的。(超過十二點就是明天)
+	String strHour, strMinute;// 用來避免時間小於10的情況，讓所有時間都能兩位數
+	Calendar calendar = Calendar.getInstance();
+	// String date;// 將所有設定的日期都塞進這裡面，以便放入購物車的訂單資訊的時間中
+}
